@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Property = require("../models/Property");
 
 async function getProperties(req, res) {
@@ -17,6 +18,43 @@ async function getProperties(req, res) {
     return res.status(500).json({
       status: "error",
       message: "Server error while fetching properties.",
+    });
+  }
+}
+
+async function getPropertyById(req, res) {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid property id.",
+      });
+    }
+
+    const property = await Property.findById(id).populate(
+      "owner",
+      "firstName lastName email",
+    );
+
+    if (!property) {
+      return res.status(404).json({
+        status: "error",
+        message: "Property not found.",
+      });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      property,
+    });
+  } catch (error) {
+    console.error(`Get property by id error: ${error.message}`);
+
+    return res.status(500).json({
+      status: "error",
+      message: "Server error while fetching property.",
     });
   }
 }
@@ -80,5 +118,6 @@ async function createProperty(req, res) {
 
 module.exports = {
   createProperty,
+  getPropertyById,
   getProperties,
 };
