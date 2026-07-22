@@ -1,6 +1,7 @@
 const cors = require("cors");
 const dotenv = require("dotenv");
 const express = require("express");
+const authRoutes = require("./routes/authRoutes");
 const connectDatabase = require("./config/database");
 
 dotenv.config();
@@ -21,6 +22,8 @@ app.get("/api/health", (req, res) => {
     message: "Bayti backend is healthy.",
   });
 });
+
+app.use("/api/auth", authRoutes);
 
 app.use((req, res) => {
   res.status(404).json({
