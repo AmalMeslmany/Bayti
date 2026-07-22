@@ -116,8 +116,70 @@ async function createProperty(req, res) {
   }
 }
 
+async function updateProperty(req, res) {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid property id.",
+      });
+    }
+
+    const property = await Property.findById(id);
+
+    if (!property) {
+      return res.status(404).json({
+        status: "error",
+        message: "Property not found.",
+      });
+    }
+
+    if (property.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        status: "error",
+        message: "You are not authorized to update this property.",
+      });
+    }
+
+    const allowedFields = [
+      "title",
+      "description",
+      "price",
+      "location",
+      "bedrooms",
+      "bathrooms",
+      "area",
+      "image",
+    ];
+
+    allowedFields.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        property[field] = req.body[field];
+      }
+    });
+
+    const updatedProperty = await property.save();
+
+    return res.status(200).json({
+      status: "success",
+      message: "Property updated successfully.",
+      property: updatedProperty,
+    });
+  } catch (error) {
+    console.error(`Update property error: ${error.message}`);
+
+    return res.status(500).json({
+      status: "error",
+      message: "Server error while updating property.",
+    });
+  }
+}
+
 module.exports = {
   createProperty,
   getPropertyById,
   getProperties,
+  updateProperty,
 };
