@@ -1,5 +1,16 @@
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+
+function generateToken(userId) {
+  if (!process.env.JWT_SECRET) {
+    throw new Error("JWT_SECRET is missing. Add it to backend/.env.");
+  }
+
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+    expiresIn: "7d",
+  });
+}
 
 async function registerUser(req, res) {
   try {
@@ -84,9 +95,12 @@ async function loginUser(req, res) {
       });
     }
 
+    const token = generateToken(user._id);
+
     return res.status(200).json({
       status: "success",
       message: "User logged in successfully.",
+      token,
       user: {
         id: user._id,
         firstName: user.firstName,
@@ -108,7 +122,24 @@ async function loginUser(req, res) {
   }
 }
 
+function getAuthenticatedUser(req, res) {
+  return res.status(200).json({
+    status: "success",
+    user: {
+      id: req.user._id,
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
+      email: req.user.email,
+      phone: req.user.phone,
+      role: req.user.role,
+      createdAt: req.user.createdAt,
+      updatedAt: req.user.updatedAt,
+    },
+  });
+}
+
 module.exports = {
+  getAuthenticatedUser,
   loginUser,
   registerUser,
 };
