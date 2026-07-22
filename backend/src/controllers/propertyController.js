@@ -1,5 +1,26 @@
 const Property = require("../models/Property");
 
+async function getProperties(req, res) {
+  try {
+    const properties = await Property.find()
+      .sort({ createdAt: -1 })
+      .populate("owner", "firstName lastName email");
+
+    return res.status(200).json({
+      status: "success",
+      count: properties.length,
+      properties,
+    });
+  } catch (error) {
+    console.error(`Get properties error: ${error.message}`);
+
+    return res.status(500).json({
+      status: "error",
+      message: "Server error while fetching properties.",
+    });
+  }
+}
+
 async function createProperty(req, res) {
   try {
     const {
@@ -59,4 +80,5 @@ async function createProperty(req, res) {
 
 module.exports = {
   createProperty,
+  getProperties,
 };
