@@ -15,6 +15,9 @@ function Navbar() {
           <NavLink to="/properties">Properties</NavLink>
         </li>
         <li>
+          <NavLink to="/add-property">Add Property</NavLink>
+        </li>
+        <li>
           <NavLink to="/favorites">Favorites</NavLink>
         </li>
         <li>
