@@ -1,13 +1,28 @@
+import { NavLink } from "react-router-dom";
+
 function Navbar() {
   return (
     <nav className="navbar">
-      <div className="navbar-logo">Bayti</div>
+      <NavLink to="/" className="navbar-logo">
+        Bayti
+      </NavLink>
 
       <ul className="navbar-links">
-        <li>Home</li>
-        <li>Properties</li>
-        <li>About</li>
-        <li>Contact</li>
+        <li>
+          <NavLink to="/">Home</NavLink>
+        </li>
+        <li>
+          <NavLink to="/properties">Properties</NavLink>
+        </li>
+        <li>
+          <NavLink to="/login">Login</NavLink>
+        </li>
+        <li>
+          <NavLink to="/register">Register</NavLink>
+        </li>
+        <li>
+          <NavLink to="/profile">Profile</NavLink>
+        </li>
       </ul>
     </nav>
   );

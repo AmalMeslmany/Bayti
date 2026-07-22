@@ -11,6 +11,7 @@
   color: #1f2937;
   font-size: 24px;
   font-weight: 700;
+  text-decoration: none;
 }
 
 .navbar-links {
@@ -19,18 +20,20 @@
   list-style: none;
 }
 
-.navbar-links li {
+.navbar-links a {
   color: #4b5563;
   cursor: pointer;
   font-size: 16px;
   font-weight: 500;
+  text-decoration: none;
 }
 
-.navbar-links li:hover {
+.navbar-links a:hover,
+.navbar-links a.active {
   color: #2563eb;
 }
 
-h1 {
+.page-title {
+  margin-top: 64px;
   text-align: center;
-  margin-top: 50px;
 }
