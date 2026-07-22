@@ -7,7 +7,7 @@ function getPriceNumber(price) {
   return Number(price.replace(/[^0-9]/g, ""));
 }
 
-function Properties() {
+function Properties({ favoriteIds, onToggleFavorite }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
@@ -100,7 +100,12 @@ function Properties() {
 
       <section className="properties-grid" aria-labelledby="properties-heading">
         {filteredProperties.map((property) => (
-          <PropertyCard key={property.id} {...property} />
+          <PropertyCard
+            key={property.id}
+            {...property}
+            isFavorite={favoriteIds.includes(property.id)}
+            onToggleFavorite={onToggleFavorite}
+          />
         ))}
       </section>
 

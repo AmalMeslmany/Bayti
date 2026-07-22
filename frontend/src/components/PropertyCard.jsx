@@ -10,16 +10,45 @@ function PropertyCard({
   bedrooms,
   bathrooms,
   area,
+  isFavorite = false,
+  onToggleFavorite,
 }) {
   return (
     <article className="property-card">
-      <img
-        className="property-card-image"
-        src={image}
-        alt={title}
-        loading="lazy"
-        decoding="async"
-      />
+      <div className="property-card-media">
+        <img
+          className="property-card-image"
+          src={image}
+          alt={title}
+          loading="lazy"
+          decoding="async"
+        />
+        <button
+          className={`favorite-button ${isFavorite ? "favorite-button-active" : ""}`}
+          type="button"
+          onClick={() => onToggleFavorite(id)}
+          aria-label={
+            isFavorite ? `Remove ${title} from favorites` : `Add ${title} to favorites`
+          }
+          aria-pressed={isFavorite}
+        >
+          <svg
+            aria-hidden="true"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill={isFavorite ? "currentColor" : "none"}
+          >
+            <path
+              d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      </div>
 
       <div className="property-card-content">
         <div>
