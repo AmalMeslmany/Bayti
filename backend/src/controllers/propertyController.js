@@ -177,8 +177,52 @@ async function updateProperty(req, res) {
   }
 }
 
+async function deleteProperty(req, res) {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid property id.",
+      });
+    }
+
+    const property = await Property.findById(id);
+
+    if (!property) {
+      return res.status(404).json({
+        status: "error",
+        message: "Property not found.",
+      });
+    }
+
+    if (property.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        status: "error",
+        message: "You are not authorized to delete this property.",
+      });
+    }
+
+    await property.deleteOne();
+
+    return res.status(200).json({
+      status: "success",
+      message: "Property deleted successfully.",
+    });
+  } catch (error) {
+    console.error(`Delete property error: ${error.message}`);
+
+    return res.status(500).json({
+      status: "error",
+      message: "Server error while deleting property.",
+    });
+  }
+}
+
 module.exports = {
   createProperty,
+  deleteProperty,
   getPropertyById,
   getProperties,
   updateProperty,
