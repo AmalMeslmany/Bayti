@@ -4,7 +4,7 @@ import "./Dashboard.css";
 
 const dashboardProperties = properties.slice(0, 2);
 
-function Dashboard() {
+function Dashboard({ favoriteIds }) {
   return (
     <main className="dashboard-page">
       <section className="dashboard-welcome">
@@ -25,7 +25,7 @@ function Dashboard() {
         </article>
         <article className="dashboard-summary-card">
           <span>Favorites</span>
-          <strong>0</strong>
+          <strong>{favoriteIds.length}</strong>
         </article>
         <article className="dashboard-summary-card">
           <span>Messages</span>

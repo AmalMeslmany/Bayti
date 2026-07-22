@@ -24,7 +24,7 @@ function AppRoutes({ favoriteIds, onToggleFavorite }) {
       />
       <Route path="/properties/:id" element={<PropertyDetails />} />
       <Route path="/add-property" element={<AddProperty />} />
-      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/dashboard" element={<Dashboard favoriteIds={favoriteIds} />} />
       <Route
         path="/favorites"
         element={
