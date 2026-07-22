@@ -1,4 +1,5 @@
 import { Route, Routes } from "react-router-dom";
+import Dashboard from "../pages/Dashboard";
 import Favorites from "../pages/Favorites";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
@@ -21,6 +22,7 @@ function AppRoutes({ favoriteIds, onToggleFavorite }) {
         }
       />
       <Route path="/properties/:id" element={<PropertyDetails />} />
+      <Route path="/dashboard" element={<Dashboard />} />
       <Route
         path="/favorites"
         element={

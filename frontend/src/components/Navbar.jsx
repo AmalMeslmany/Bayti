@@ -26,6 +26,9 @@ function Navbar() {
         <li>
           <NavLink to="/profile">Profile</NavLink>
         </li>
+        <li>
+          <NavLink to="/dashboard">Dashboard</NavLink>
+        </li>
       </ul>
     </nav>
   );
