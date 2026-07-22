@@ -1,6 +1,7 @@
 const cors = require("cors");
 const dotenv = require("dotenv");
 const express = require("express");
+const connectDatabase = require("./config/database");
 
 dotenv.config();
 
@@ -37,6 +38,17 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Bayti backend server is running on port ${PORT}`);
-});
+async function startServer() {
+  try {
+    await connectDatabase();
+
+    app.listen(PORT, () => {
+      console.log(`Bayti backend server is running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error(`Failed to start server: ${error.message}`);
+    process.exit(1);
+  }
+}
+
+startServer();
