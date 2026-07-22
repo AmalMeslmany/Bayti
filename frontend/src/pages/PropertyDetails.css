@@ -1,0 +1,171 @@
+.property-details-page {
+  padding: 56px 48px;
+  background-color: #f9fafb;
+}
+
+.property-details-container {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.property-details-image {
+  width: 100%;
+  height: 460px;
+  display: block;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.property-details-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 32px;
+  margin-top: 32px;
+}
+
+.property-details-main,
+.property-contact-card,
+.property-not-found {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+}
+
+.property-details-main {
+  padding: 32px;
+}
+
+.property-details-main h1 {
+  margin: 0;
+  color: #111827;
+  font-size: 40px;
+  line-height: 1.15;
+}
+
+.property-details-location {
+  margin-top: 12px;
+  color: #6b7280;
+  font-size: 17px;
+}
+
+.property-details-price {
+  margin-top: 24px;
+  color: #2563eb;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.property-details-features {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 28px 0;
+}
+
+.property-details-features div {
+  padding: 16px;
+  background-color: #f9fafb;
+  border-radius: 6px;
+}
+
+.property-details-features dt {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.property-details-features dd {
+  margin: 6px 0 0;
+  color: #111827;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.property-description {
+  color: #4b5563;
+  font-size: 17px;
+  line-height: 1.8;
+}
+
+.property-contact-card {
+  align-self: start;
+  padding: 28px;
+}
+
+.property-contact-card h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 24px;
+}
+
+.property-contact-card p {
+  margin-top: 12px;
+  color: #6b7280;
+  line-height: 1.7;
+}
+
+.property-contact-button {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 22px;
+  border: 0;
+  border-radius: 6px;
+  background-color: #1f2937;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.property-contact-button:hover {
+  background-color: #111827;
+}
+
+.property-contact-button:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 3px;
+}
+
+.property-not-found {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px;
+  text-align: center;
+}
+
+.property-not-found h1 {
+  color: #111827;
+}
+
+.property-not-found p {
+  margin-top: 12px;
+  color: #6b7280;
+}
+
+@media (max-width: 900px) {
+  .property-details-content {
+    grid-template-columns: 1fr;
+  }
+
+  .property-details-image {
+    height: 360px;
+  }
+}
+
+@media (max-width: 640px) {
+  .property-details-page {
+    padding: 40px 20px;
+  }
+
+  .property-details-main {
+    padding: 24px;
+  }
+
+  .property-details-main h1 {
+    font-size: 32px;
+  }
+
+  .property-details-features {
+    grid-template-columns: 1fr;
+  }
+}
