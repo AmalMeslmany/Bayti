@@ -1,10 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { createProperty } from "../api/properties";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  createProperty,
+  fetchPropertyById,
+  updateProperty,
+} from "../api/properties";
 import { useAuth } from "../context/useAuth";
 import "./AddProperty.css";
 
-const maxImageSize = 5 * 1024 * 1024;
+const maxImageSize = 10 * 1024 * 1024;
+const maxImageCount = 5;
+const allowedImageTypes = ["image/jpeg", "image/png", "image/webp"];
 
 const initialFormData = {
   title: "",
@@ -16,25 +22,85 @@ const initialFormData = {
   description: "",
 };
 
-function AddProperty() {
-  const { token } = useAuth();
+function AddProperty({ mode = "create" }) {
+  const isEditMode = mode === "edit";
+  const { id } = useParams();
+  const { token, user } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState(initialFormData);
-  const [propertyImage, setPropertyImage] = useState(null);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
+  const [removedImagePaths, setRemovedImagePaths] = useState([]);
   const [errors, setErrors] = useState({});
   const [backendError, setBackendError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingProperty, setIsLoadingProperty] = useState(isEditMode);
   const fileInputRef = useRef(null);
+  const selectedImagesRef = useRef([]);
+
+  const totalImageCount = existingImages.length + selectedImages.length;
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadProperty() {
+      if (!isEditMode) {
+        return;
+      }
+
+      try {
+        const property = await fetchPropertyById(id);
+        const ownerId = property.owner?._id || property.owner?.id;
+        const isOwner =
+          ownerId === user.id || property.owner?.email === user.email;
+
+        if (!isOwner) {
+          setBackendError("You are not authorized to edit this property.");
+          return;
+        }
+
+        if (isActive) {
+          setFormData({
+            title: property.title || "",
+            location: property.location || "",
+            price: String(property.priceValue ?? ""),
+            bedrooms: String(property.bedrooms ?? ""),
+            bathrooms: String(property.bathrooms ?? ""),
+            area: String(property.area ?? ""),
+            description: property.description || "",
+          });
+          setExistingImages(property.images || []);
+        }
+      } catch (error) {
+        if (isActive) {
+          setBackendError(error.message);
+        }
+      } finally {
+        if (isActive) {
+          setIsLoadingProperty(false);
+        }
+      }
+    }
+
+    loadProperty();
+
+    return () => {
+      isActive = false;
+    };
+  }, [id, isEditMode, user.email, user.id]);
+
+  useEffect(() => {
+    selectedImagesRef.current = selectedImages;
+  }, [selectedImages]);
 
   useEffect(() => {
     return () => {
-      if (imagePreviewUrl) {
-        URL.revokeObjectURL(imagePreviewUrl);
-      }
+      selectedImagesRef.current.forEach((image) =>
+        URL.revokeObjectURL(image.previewUrl),
+      );
     };
-  }, [imagePreviewUrl]);
+  }, []);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -46,54 +112,72 @@ function AddProperty() {
   }
 
   function handleImageChange(event) {
-    const selectedFile = event.target.files[0];
+    const files = Array.from(event.target.files || []);
 
-    if (imagePreviewUrl) {
-      URL.revokeObjectURL(imagePreviewUrl);
-      setImagePreviewUrl("");
-    }
-
-    if (!selectedFile) {
-      setPropertyImage(null);
+    if (files.length === 0) {
       return;
     }
 
-    if (!selectedFile.type.startsWith("image/")) {
-      setPropertyImage(null);
+    const nextErrors = {};
+
+    if (totalImageCount + files.length > maxImageCount) {
+      nextErrors.propertyImage = "A property can have a maximum of 5 images.";
+    }
+
+    const invalidTypeFile = files.find(
+      (file) => !allowedImageTypes.includes(file.type),
+    );
+
+    if (invalidTypeFile) {
+      nextErrors.propertyImage = "Only JPEG, PNG, and WebP images are allowed.";
+    }
+
+    const oversizedFile = files.find((file) => file.size > maxImageSize);
+
+    if (oversizedFile) {
+      nextErrors.propertyImage = "Each image must be 10 MB or less.";
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
       setErrors({
         ...errors,
-        propertyImage: "Please select a valid image file.",
+        ...nextErrors,
       });
       return;
     }
 
-    if (selectedFile.size > maxImageSize) {
-      setPropertyImage(null);
-      setErrors({
-        ...errors,
-        propertyImage: "Image size must be 5 MB or less.",
-      });
-      return;
-    }
-
-    setPropertyImage(selectedFile);
-    setImagePreviewUrl(URL.createObjectURL(selectedFile));
+    setSelectedImages([
+      ...selectedImages,
+      ...files.map((file) => ({
+        file,
+        previewUrl: URL.createObjectURL(file),
+      })),
+    ]);
     setErrors({
       ...errors,
       propertyImage: "",
     });
-  }
-
-  function removeSelectedImage() {
-    if (imagePreviewUrl) {
-      URL.revokeObjectURL(imagePreviewUrl);
-    }
-
-    setPropertyImage(null);
-    setImagePreviewUrl("");
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+  }
+
+  function removeSelectedImage(indexToRemove) {
+    const imageToRemove = selectedImages[indexToRemove];
+    URL.revokeObjectURL(imageToRemove.previewUrl);
+    setSelectedImages(
+      selectedImages.filter((image, index) => index !== indexToRemove),
+    );
+  }
+
+  function removeExistingImage(imageToRemove) {
+    setExistingImages(
+      existingImages.filter((image) => image.path !== imageToRemove.path),
+    );
+
+    if (imageToRemove.path) {
+      setRemovedImagePaths([...removedImagePaths, imageToRemove.path]);
     }
   }
 
@@ -106,21 +190,15 @@ function AddProperty() {
       }
     });
 
-    if (!propertyImage) {
-      nextErrors.propertyImage = "Property image is required.";
+    if (totalImageCount === 0) {
+      nextErrors.propertyImage = "At least one property image is required.";
+    }
+
+    if (totalImageCount > maxImageCount) {
+      nextErrors.propertyImage = "A property can have a maximum of 5 images.";
     }
 
     return nextErrors;
-  }
-
-  function readFileAsDataUrl(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error("Unable to read image file."));
-      reader.readAsDataURL(file);
-    });
   }
 
   async function handleSubmit(event) {
@@ -138,23 +216,35 @@ function AddProperty() {
     setIsSubmitting(true);
 
     try {
-      const image = await readFileAsDataUrl(propertyImage);
+      const propertyFormData = new FormData();
 
-      await createProperty(
-        {
-          title: formData.title.trim(),
-          description: formData.description.trim(),
-          price: Number(formData.price),
-          location: formData.location.trim(),
-          bedrooms: Number(formData.bedrooms),
-          bathrooms: Number(formData.bathrooms),
-          area: Number(formData.area),
-          image,
-        },
-        token,
+      propertyFormData.append("title", formData.title.trim());
+      propertyFormData.append("description", formData.description.trim());
+      propertyFormData.append("price", Number(formData.price));
+      propertyFormData.append("location", formData.location.trim());
+      propertyFormData.append("bedrooms", Number(formData.bedrooms));
+      propertyFormData.append("bathrooms", Number(formData.bathrooms));
+      propertyFormData.append("area", Number(formData.area));
+
+      selectedImages.forEach((image) => {
+        propertyFormData.append("images", image.file);
+      });
+
+      if (isEditMode) {
+        propertyFormData.append(
+          "removeImagePaths",
+          JSON.stringify(removedImagePaths),
+        );
+        await updateProperty(id, propertyFormData, token);
+      } else {
+        await createProperty(propertyFormData, token);
+      }
+
+      setSuccessMessage(
+        isEditMode
+          ? "Property updated successfully."
+          : "Property created successfully.",
       );
-
-      setSuccessMessage("Property created successfully.");
       setTimeout(() => {
         navigate("/dashboard");
       }, 700);
@@ -167,10 +257,17 @@ function AddProperty() {
 
   return (
     <main className="add-property-page">
+      {isLoadingProperty && (
+        <p className="add-property-status">Loading property...</p>
+      )}
       <section className="add-property-card" aria-labelledby="add-property-title">
         <header className="add-property-header">
-          <p className="add-property-eyebrow">New Listing</p>
-          <h1 id="add-property-title">Add Property</h1>
+          <p className="add-property-eyebrow">
+            {isEditMode ? "Edit Listing" : "New Listing"}
+          </p>
+          <h1 id="add-property-title">
+            {isEditMode ? "Edit Property" : "Add Property"}
+          </h1>
           <p>
             Create a clean property draft with the key details buyers need to
             understand the listing.
@@ -275,34 +372,63 @@ function AddProperty() {
           </div>
 
           <div className="add-property-field add-property-field-wide">
-            <label htmlFor="property-image">Property Image</label>
+            <label htmlFor="property-image">Property Images</label>
+            <p className="selected-file-name">{totalImageCount} / 5 images</p>
+
+            {existingImages.length > 0 && (
+              <div className="image-preview-grid">
+                {existingImages.map((image) => (
+                  <div className="image-preview" key={image.path || image.url}>
+                    <img src={image.url} alt="Current property" />
+                    <button
+                      type="button"
+                      onClick={() => removeExistingImage(image)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <input
               id="property-image"
               ref={fileInputRef}
               type="file"
               accept="image/*"
+              multiple
               onChange={handleImageChange}
             />
-            {propertyImage && (
-              <p className="selected-file-name">
-                Selected image: {propertyImage.name}
-              </p>
-            )}
-            {imagePreviewUrl && (
-              <div className="image-preview">
-                <img src={imagePreviewUrl} alt="Selected property preview" />
-                <button type="button" onClick={removeSelectedImage}>
-                  Remove Image
-                </button>
+
+            {selectedImages.length > 0 && (
+              <div className="image-preview-grid">
+                {selectedImages.map((image, index) => (
+                  <div className="image-preview" key={image.previewUrl}>
+                    <img src={image.previewUrl} alt="Selected property preview" />
+                    <button
+                      type="button"
+                      onClick={() => removeSelectedImage(index)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
+
             {errors.propertyImage && (
               <p className="add-property-error">{errors.propertyImage}</p>
             )}
           </div>
 
           <button className="add-property-button" type="submit">
-            {isSubmitting ? "Publishing..." : "Publish Property"}
+            {isSubmitting
+              ? isEditMode
+                ? "Saving..."
+                : "Publishing..."
+              : isEditMode
+                ? "Save Changes"
+                : "Publish Property"}
           </button>
         </form>
 

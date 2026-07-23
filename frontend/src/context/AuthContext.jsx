@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { loginUser } from "../api/auth";
+import { useEffect, useMemo, useState } from "react";
+import { fetchAuthenticatedUser, loginUser } from "../api/auth";
 import AuthContext from "./authContext";
 
 const storageKey = "bayti_auth";
@@ -16,6 +16,40 @@ function getStoredAuth() {
 
 export function AuthProvider({ children }) {
   const [auth, setAuth] = useState(getStoredAuth);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function restoreSession() {
+      if (!auth.token) {
+        return;
+      }
+
+      try {
+        const data = await fetchAuthenticatedUser(auth.token);
+        const nextAuth = {
+          token: auth.token,
+          user: data.user,
+        };
+
+        if (isActive) {
+          localStorage.setItem(storageKey, JSON.stringify(nextAuth));
+          setAuth(nextAuth);
+        }
+      } catch {
+        if (isActive) {
+          localStorage.removeItem(storageKey);
+          setAuth({ token: "", user: null });
+        }
+      }
+    }
+
+    restoreSession();
+
+    return () => {
+      isActive = false;
+    };
+  }, [auth.token]);
 
   async function login(credentials) {
     const data = await loginUser(credentials);

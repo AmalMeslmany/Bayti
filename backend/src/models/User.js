@@ -35,6 +35,12 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    favorites: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Property",
+      },
+    ],
   },
   {
     timestamps: true,

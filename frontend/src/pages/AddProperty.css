@@ -98,6 +98,13 @@
   line-height: 1.5;
 }
 
+.add-property-status {
+  max-width: 900px;
+  margin: 0 auto 18px;
+  color: #6b7280;
+  font-weight: 700;
+}
+
 .selected-file-name {
   color: #4b5563;
   font-size: 14px;
@@ -109,9 +116,16 @@
   margin-top: 6px;
 }
 
+.image-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+  margin-top: 6px;
+}
+
 .image-preview img {
   width: 100%;
-  max-height: 320px;
+  height: 150px;
   display: block;
   object-fit: cover;
   border-radius: 8px;

@@ -108,8 +108,12 @@
   gap: 12px;
 }
 
+.dashboard-card-actions a,
 .dashboard-card-actions button {
   min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid #d1d5db;
   border-radius: 6px;
   background-color: #ffffff;
@@ -117,8 +121,10 @@
   cursor: pointer;
   font: inherit;
   font-weight: 700;
+  text-decoration: none;
 }
 
+.dashboard-card-actions a:hover,
 .dashboard-card-actions button:hover {
   background-color: #f3f4f6;
 }
@@ -132,6 +138,7 @@
   background-color: #fef2f2;
 }
 
+.dashboard-card-actions a:focus-visible,
 .dashboard-card-actions button:focus-visible {
   outline: 3px solid #93c5fd;
   outline-offset: 3px;

@@ -16,6 +16,34 @@
   border-radius: 8px;
 }
 
+.property-gallery-thumbnails {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.property-thumbnail {
+  height: 78px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background-color: transparent;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.property-thumbnail-active {
+  border-color: #2563eb;
+}
+
+.property-thumbnail img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
 .property-details-content {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;

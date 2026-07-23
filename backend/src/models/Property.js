@@ -41,6 +41,33 @@ const propertySchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    imagePath: {
+      type: String,
+      trim: true,
+    },
+    images: {
+      type: [
+        {
+          url: {
+            type: String,
+            required: true,
+            trim: true,
+          },
+          path: {
+            type: String,
+            required: true,
+            trim: true,
+          },
+        },
+      ],
+      validate: {
+        validator(images) {
+          return images.length <= 5;
+        },
+        message: "A property can have a maximum of 5 images.",
+      },
+      default: [],
+    },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

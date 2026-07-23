@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchPropertyById } from "../api/properties";
 import "./PropertyDetails.css";
@@ -6,6 +6,7 @@ import "./PropertyDetails.css";
 function PropertyDetails() {
   const { id } = useParams();
   const [property, setProperty] = useState(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -14,6 +15,7 @@ function PropertyDetails() {
       try {
         const loadedProperty = await fetchPropertyById(id);
         setProperty(loadedProperty);
+        setSelectedImageIndex(0);
       } catch {
         setErrorMessage(
           "The property you are looking for does not exist or may no longer be available.",
@@ -51,11 +53,31 @@ function PropertyDetails() {
   return (
     <main className="property-details-page">
       <div className="property-details-container">
-        <img
-          className="property-details-image"
-          src={property.image}
-          alt={property.title}
-        />
+        <div className="property-gallery">
+          <img
+            className="property-details-image"
+            src={property.images[selectedImageIndex]?.url || property.image}
+            alt={property.title}
+          />
+          {property.images.length > 1 && (
+            <div className="property-gallery-thumbnails">
+              {property.images.map((image, index) => (
+                <button
+                  className={
+                    index === selectedImageIndex
+                      ? "property-thumbnail property-thumbnail-active"
+                      : "property-thumbnail"
+                  }
+                  key={image.path || image.url}
+                  type="button"
+                  onClick={() => setSelectedImageIndex(index)}
+                >
+                  <img src={image.url} alt={`${property.title} ${index + 1}`} />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="property-details-content">
           <section className="property-details-main">
@@ -96,3 +118,4 @@ function PropertyDetails() {
 }
 
 export default PropertyDetails;
+

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { deleteProperty, fetchProperties } from "../api/properties";
 import PropertyCard from "../components/PropertyCard";
 import { useAuth } from "../context/useAuth";
@@ -105,7 +106,7 @@ function Dashboard({ favoriteIds }) {
                 {...property}
                 actions={
                   <div className="dashboard-card-actions">
-                    <button type="button">Edit</button>
+                    <Link to={`/properties/${property.id}/edit`}>Edit</Link>
                     <button
                       type="button"
                       className="dashboard-delete-button"
