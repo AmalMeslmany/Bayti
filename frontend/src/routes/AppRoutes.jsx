@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import AddProperty from "../pages/AddProperty";
+import ProtectedRoute from "../components/ProtectedRoute";
 import Dashboard from "../pages/Dashboard";
 import Favorites from "../pages/Favorites";
 import Home from "../pages/Home";
@@ -23,8 +24,22 @@ function AppRoutes({ favoriteIds, onToggleFavorite }) {
         }
       />
       <Route path="/properties/:id" element={<PropertyDetails />} />
-      <Route path="/add-property" element={<AddProperty />} />
-      <Route path="/dashboard" element={<Dashboard favoriteIds={favoriteIds} />} />
+      <Route
+        path="/add-property"
+        element={
+          <ProtectedRoute>
+            <AddProperty />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard favoriteIds={favoriteIds} />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/favorites"
         element={
@@ -36,7 +51,14 @@ function AppRoutes({ favoriteIds, onToggleFavorite }) {
       />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/profile" element={<Profile />} />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }

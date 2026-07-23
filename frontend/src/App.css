@@ -28,6 +28,25 @@
   text-decoration: none;
 }
 
+.navbar-user {
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.navbar-logout {
+  border: 0;
+  background-color: transparent;
+  color: #4b5563;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 500;
+}
+
+.navbar-logout:hover {
+  color: #2563eb;
+}
+
 .navbar-links a:hover,
 .navbar-links a.active {
   color: #2563eb;

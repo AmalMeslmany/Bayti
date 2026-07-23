@@ -90,6 +90,14 @@
   line-height: 1.5;
 }
 
+.add-property-success {
+  margin-top: 18px;
+  color: #15803d;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
 .selected-file-name {
   color: #4b5563;
   font-size: 14px;

@@ -1,16 +1,22 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import PasswordInput from "../components/PasswordInput";
+import { useAuth } from "../context/useAuth";
 import "./Auth.css";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function Login() {
+  const { login } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [errors, setErrors] = useState({});
+  const [backendError, setBackendError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   function handleChange(event) {
@@ -38,11 +44,30 @@ function Login() {
     return nextErrors;
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
     const validationErrors = validateForm();
     setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length > 0) {
+      return;
+    }
+
+    setBackendError("");
+    setIsSubmitting(true);
+
+    try {
+      await login({
+        email: formData.email.trim(),
+        password: formData.password,
+      });
+      navigate(location.state?.from?.pathname || "/", { replace: true });
+    } catch (error) {
+      setBackendError(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -84,9 +109,11 @@ function Login() {
           </div>
 
           <button className="auth-button" type="submit">
-            Login
+            {isSubmitting ? "Logging in..." : "Login"}
           </button>
         </form>
+
+        {backendError && <p className="auth-error">{backendError}</p>}
 
         <p className="auth-switch">
           Do not have an account? <Link to="/register">Register</Link>

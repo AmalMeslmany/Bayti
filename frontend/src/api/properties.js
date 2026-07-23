@@ -1,6 +1,5 @@
 import fallbackPropertyImage from "../assets/bayti-hero.jpg";
-
-const API_BASE_URL = "/api";
+import { apiRequest } from "./client";
 
 function formatPrice(price) {
   return `$${Number(price).toLocaleString()}`;
@@ -22,23 +21,28 @@ export function normalizeProperty(property) {
 }
 
 export async function fetchProperties() {
-  const response = await fetch(`${API_BASE_URL}/properties`);
-
-  if (!response.ok) {
-    throw new Error("Unable to load properties.");
-  }
-
-  const data = await response.json();
+  const data = await apiRequest("/properties");
   return (data.properties || []).map(normalizeProperty);
 }
 
 export async function fetchPropertyById(id) {
-  const response = await fetch(`${API_BASE_URL}/properties/${id}`);
-
-  if (!response.ok) {
-    throw new Error("Unable to load property.");
-  }
-
-  const data = await response.json();
+  const data = await apiRequest(`/properties/${id}`);
   return normalizeProperty(data.property);
+}
+
+export async function createProperty(propertyData, token) {
+  const data = await apiRequest("/properties", {
+    method: "POST",
+    token,
+    body: propertyData,
+  });
+
+  return normalizeProperty(data.property);
+}
+
+export function deleteProperty(propertyId, token) {
+  return apiRequest(`/properties/${propertyId}`, {
+    method: "DELETE",
+    token,
+  });
 }

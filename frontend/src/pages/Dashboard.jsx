@@ -1,28 +1,63 @@
 import { useEffect, useState } from "react";
-import { fetchProperties } from "../api/properties";
+import { deleteProperty, fetchProperties } from "../api/properties";
 import PropertyCard from "../components/PropertyCard";
+import { useAuth } from "../context/useAuth";
 import "./Dashboard.css";
 
 function Dashboard({ favoriteIds }) {
+  const { token, user } = useAuth();
   const [properties, setProperties] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
-  const dashboardProperties = properties.slice(0, 2);
+  const [deletingPropertyId, setDeletingPropertyId] = useState("");
 
   useEffect(() => {
+    let isActive = true;
+
     async function loadProperties() {
       try {
         const loadedProperties = await fetchProperties();
-        setProperties(loadedProperties);
-      } catch {
-        setErrorMessage("Unable to load dashboard properties right now.");
+        const userProperties = loadedProperties.filter((property) => {
+          const ownerId = property.owner?._id || property.owner?.id;
+          return ownerId === user.id || property.owner?.email === user.email;
+        });
+
+        if (isActive) {
+          setProperties(userProperties);
+        }
+      } catch (error) {
+        if (isActive) {
+          setErrorMessage(error.message);
+        }
       } finally {
-        setIsLoading(false);
+        if (isActive) {
+          setIsLoading(false);
+        }
       }
     }
 
     loadProperties();
-  }, []);
+
+    return () => {
+      isActive = false;
+    };
+  }, [user.email, user.id]);
+
+  async function handleDeleteProperty(propertyId) {
+    setDeletingPropertyId(propertyId);
+    setErrorMessage("");
+
+    try {
+      await deleteProperty(propertyId, token);
+      setProperties((currentProperties) =>
+        currentProperties.filter((property) => property.id !== propertyId),
+      );
+    } catch (error) {
+      setErrorMessage(error.message);
+    } finally {
+      setDeletingPropertyId("");
+    }
+  }
 
   return (
     <main className="dashboard-page">
@@ -62,17 +97,24 @@ function Dashboard({ favoriteIds }) {
 
         {errorMessage && <p className="dashboard-empty">{errorMessage}</p>}
 
-        {!isLoading && !errorMessage && dashboardProperties.length > 0 && (
+        {!isLoading && !errorMessage && properties.length > 0 && (
           <div className="dashboard-properties-grid">
-            {dashboardProperties.map((property) => (
+            {properties.map((property) => (
               <PropertyCard
                 key={property.id}
                 {...property}
                 actions={
                   <div className="dashboard-card-actions">
                     <button type="button">Edit</button>
-                    <button type="button" className="dashboard-delete-button">
-                      Delete
+                    <button
+                      type="button"
+                      className="dashboard-delete-button"
+                      disabled={deletingPropertyId === property.id}
+                      onClick={() => handleDeleteProperty(property.id)}
+                    >
+                      {deletingPropertyId === property.id
+                        ? "Deleting..."
+                        : "Delete"}
                     </button>
                   </div>
                 }
@@ -81,7 +123,7 @@ function Dashboard({ favoriteIds }) {
           </div>
         )}
 
-        {!isLoading && !errorMessage && dashboardProperties.length === 0 && (
+        {!isLoading && !errorMessage && properties.length === 0 && (
           <p className="dashboard-empty">No properties available yet.</p>
         )}
       </section>

@@ -1,5 +1,17 @@
+import { useAuth } from "../context/useAuth";
+
 function Profile() {
-  return <h1 className="page-title">Profile</h1>;
+  const { user } = useAuth();
+
+  return (
+    <main className="page-title">
+      <h1>Profile</h1>
+      <p>
+        {user.firstName} {user.lastName}
+      </p>
+      <p>{user.email}</p>
+    </main>
+  );
 }
 
 export default Profile;

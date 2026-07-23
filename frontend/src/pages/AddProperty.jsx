@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { createProperty } from "../api/properties";
+import { useAuth } from "../context/useAuth";
 import "./AddProperty.css";
 
 const maxImageSize = 5 * 1024 * 1024;
@@ -14,10 +17,15 @@ const initialFormData = {
 };
 
 function AddProperty() {
+  const { token } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState(initialFormData);
   const [propertyImage, setPropertyImage] = useState(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState("");
   const [errors, setErrors] = useState({});
+  const [backendError, setBackendError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -105,11 +113,56 @@ function AddProperty() {
     return nextErrors;
   }
 
-  function handleSubmit(event) {
+  function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Unable to read image file."));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handleSubmit(event) {
     event.preventDefault();
 
     const validationErrors = validateForm();
     setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length > 0) {
+      return;
+    }
+
+    setBackendError("");
+    setSuccessMessage("");
+    setIsSubmitting(true);
+
+    try {
+      const image = await readFileAsDataUrl(propertyImage);
+
+      await createProperty(
+        {
+          title: formData.title.trim(),
+          description: formData.description.trim(),
+          price: Number(formData.price),
+          location: formData.location.trim(),
+          bedrooms: Number(formData.bedrooms),
+          bathrooms: Number(formData.bathrooms),
+          area: Number(formData.area),
+          image,
+        },
+        token,
+      );
+
+      setSuccessMessage("Property created successfully.");
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 700);
+    } catch (error) {
+      setBackendError(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -249,9 +302,14 @@ function AddProperty() {
           </div>
 
           <button className="add-property-button" type="submit">
-            Publish Property
+            {isSubmitting ? "Publishing..." : "Publish Property"}
           </button>
         </form>
+
+        {successMessage && (
+          <p className="add-property-success">{successMessage}</p>
+        )}
+        {backendError && <p className="add-property-error">{backendError}</p>}
       </section>
     </main>
   );
