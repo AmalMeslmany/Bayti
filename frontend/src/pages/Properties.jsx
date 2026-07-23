@@ -1,21 +1,35 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { fetchProperties } from "../api/properties";
 import PropertyCard from "../components/PropertyCard";
-import properties from "../data/properties";
 import "./Properties.css";
 
-function getPriceNumber(price) {
-  return Number(price.replace(/[^0-9]/g, ""));
-}
-
 function Properties({ favoriteIds, onToggleFavorite }) {
+  const [properties, setProperties] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [bedrooms, setBedrooms] = useState("");
 
+  useEffect(() => {
+    async function loadProperties() {
+      try {
+        const loadedProperties = await fetchProperties();
+        setProperties(loadedProperties);
+      } catch {
+        setErrorMessage("Unable to load properties. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadProperties();
+  }, []);
+
   const filteredProperties = properties.filter((property) => {
     const searchValue = searchTerm.toLowerCase().trim();
-    const propertyPrice = getPriceNumber(property.price);
+    const propertyPrice = property.priceValue;
 
     const matchesSearch =
       property.title.toLowerCase().includes(searchValue) ||
@@ -98,19 +112,32 @@ function Properties({ favoriteIds, onToggleFavorite }) {
         </div>
       </section>
 
-      <section className="properties-grid" aria-labelledby="properties-heading">
-        {filteredProperties.map((property) => (
-          <PropertyCard
-            key={property.id}
-            {...property}
-            isFavorite={favoriteIds.includes(property.id)}
-            onToggleFavorite={onToggleFavorite}
-          />
-        ))}
-      </section>
+      {isLoading && <p className="properties-empty">Loading properties...</p>}
 
-      {filteredProperties.length === 0 && (
-        <p className="properties-empty">No properties found.</p>
+      {errorMessage && <p className="properties-empty">{errorMessage}</p>}
+
+      {!isLoading && !errorMessage && filteredProperties.length > 0 && (
+        <section className="properties-grid" aria-labelledby="properties-heading">
+          {filteredProperties.map((property) => (
+            <PropertyCard
+              key={property.id}
+              {...property}
+              isFavorite={favoriteIds.includes(property.id)}
+              onToggleFavorite={onToggleFavorite}
+            />
+          ))}
+        </section>
+      )}
+
+      {!isLoading && !errorMessage && properties.length === 0 && (
+        <p className="properties-empty">No properties available.</p>
+      )}
+
+      {!isLoading &&
+        !errorMessage &&
+        properties.length > 0 &&
+        filteredProperties.length === 0 && (
+          <p className="properties-empty">No properties found.</p>
       )}
     </main>
   );

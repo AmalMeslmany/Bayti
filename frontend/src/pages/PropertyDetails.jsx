@@ -1,20 +1,48 @@
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import properties from "../data/properties";
+import { fetchPropertyById } from "../api/properties";
 import "./PropertyDetails.css";
 
 function PropertyDetails() {
   const { id } = useParams();
-  const property = properties.find((item) => item.id === Number(id));
+  const [property, setProperty] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  if (!property) {
+  useEffect(() => {
+    async function loadProperty() {
+      try {
+        const loadedProperty = await fetchPropertyById(id);
+        setProperty(loadedProperty);
+      } catch {
+        setErrorMessage(
+          "The property you are looking for does not exist or may no longer be available.",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadProperty();
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <main className="property-details-page">
+        <section className="property-not-found">
+          <h1>Loading Property</h1>
+          <p>Getting the latest listing details.</p>
+        </section>
+      </main>
+    );
+  }
+
+  if (errorMessage || !property) {
     return (
       <main className="property-details-page">
         <section className="property-not-found">
           <h1>Property Not Found</h1>
-          <p>
-            The property you are looking for does not exist or may no longer be
-            available.
-          </p>
+          <p>{errorMessage}</p>
         </section>
       </main>
     );
