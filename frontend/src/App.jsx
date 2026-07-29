@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { addFavorite, fetchFavorites, removeFavorite } from "./api/favorites";
 import "./App.css";
@@ -7,12 +8,19 @@ import { useAuth } from "./context/useAuth";
 import AppRoutes from "./routes/AppRoutes";
 
 function App() {
+  const { i18n } = useTranslation();
   const { isAuthenticated, token } = useAuth();
   const navigate = useNavigate();
   const [favoriteIds, setFavoriteIds] = useState([]);
   const [favoriteProperties, setFavoriteProperties] = useState([]);
   const [favoritesError, setFavoritesError] = useState("");
   const [areFavoritesLoading, setAreFavoritesLoading] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.lang = i18n.language;
+    document.documentElement.dir = i18n.language === "ar" ? "rtl" : "ltr";
+    localStorage.setItem("bayti_language", i18n.language);
+  }, [i18n.language]);
 
   useEffect(() => {
     let isActive = true;

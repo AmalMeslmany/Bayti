@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { deleteProperty, fetchProperties } from "../api/properties";
+import { deleteProperty, fetchMyProperties } from "../api/properties";
 import PropertyCard from "../components/PropertyCard";
 import { useAuth } from "../context/useAuth";
 import "./Dashboard.css";
 
 function Dashboard({ favoriteIds }) {
+  const { t } = useTranslation();
   const { token, user } = useAuth();
   const [properties, setProperties] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -17,11 +19,7 @@ function Dashboard({ favoriteIds }) {
 
     async function loadProperties() {
       try {
-        const loadedProperties = await fetchProperties();
-        const userProperties = loadedProperties.filter((property) => {
-          const ownerId = property.owner?._id || property.owner?.id;
-          return ownerId === user.id || property.owner?.email === user.email;
-        });
+        const userProperties = await fetchMyProperties(token);
 
         if (isActive) {
           setProperties(userProperties);
@@ -42,7 +40,7 @@ function Dashboard({ favoriteIds }) {
     return () => {
       isActive = false;
     };
-  }, [user.email, user.id]);
+  }, [token, user.id]);
 
   async function handleDeleteProperty(propertyId) {
     setDeletingPropertyId(propertyId);
@@ -64,37 +62,34 @@ function Dashboard({ favoriteIds }) {
     <main className="dashboard-page">
       <section className="dashboard-welcome">
         <div>
-          <p className="dashboard-eyebrow">User Dashboard</p>
-          <h1>Welcome back to Bayti</h1>
-          <p>
-            Manage your property activity, review saved homes, and keep track of
-            new messages from one place.
-          </p>
+          <p className="dashboard-eyebrow">{t("dashboard.eyebrow")}</p>
+          <h1>{t("dashboard.title")}</h1>
+          <p>{t("dashboard.subtitle")}</p>
         </div>
       </section>
 
-      <section className="dashboard-summary" aria-label="Dashboard summary">
+      <section className="dashboard-summary" aria-label={t("dashboard.summary")}>
         <article className="dashboard-summary-card">
-          <span>My Properties</span>
+          <span>{t("dashboard.myProperties")}</span>
           <strong>{properties.length}</strong>
         </article>
         <article className="dashboard-summary-card">
-          <span>Favorites</span>
+          <span>{t("dashboard.favorites")}</span>
           <strong>{favoriteIds.length}</strong>
         </article>
         <article className="dashboard-summary-card">
-          <span>Messages</span>
+          <span>{t("dashboard.messages")}</span>
           <strong>0</strong>
         </article>
       </section>
 
       <section className="dashboard-section">
         <header className="dashboard-section-header">
-          <h2>My Properties</h2>
-          <p>Your latest property listings.</p>
+          <h2>{t("dashboard.sectionTitle")}</h2>
+          <p>{t("dashboard.sectionSubtitle")}</p>
         </header>
 
-        {isLoading && <p className="dashboard-empty">Loading properties...</p>}
+        {isLoading && <p className="dashboard-empty">{t("dashboard.loading")}</p>}
 
         {errorMessage && <p className="dashboard-empty">{errorMessage}</p>}
 
@@ -106,7 +101,14 @@ function Dashboard({ favoriteIds }) {
                 {...property}
                 actions={
                   <div className="dashboard-card-actions">
-                    <Link to={`/properties/${property.id}/edit`}>Edit</Link>
+                    {property.isHidden ? (
+                      <span className="dashboard-hidden-badge">
+                        {t("dashboard.hiddenByAdmin")}
+                      </span>
+                    ) : null}
+                    <Link to={`/properties/${property.id}/edit`}>
+                      {t("dashboard.edit")}
+                    </Link>
                     <button
                       type="button"
                       className="dashboard-delete-button"
@@ -114,8 +116,8 @@ function Dashboard({ favoriteIds }) {
                       onClick={() => handleDeleteProperty(property.id)}
                     >
                       {deletingPropertyId === property.id
-                        ? "Deleting..."
-                        : "Delete"}
+                        ? t("dashboard.deleting")
+                        : t("dashboard.delete")}
                     </button>
                   </div>
                 }
@@ -125,7 +127,7 @@ function Dashboard({ favoriteIds }) {
         )}
 
         {!isLoading && !errorMessage && properties.length === 0 && (
-          <p className="dashboard-empty">No properties available yet.</p>
+          <p className="dashboard-empty">{t("dashboard.empty")}</p>
         )}
       </section>
     </main>

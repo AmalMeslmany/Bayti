@@ -19,38 +19,90 @@
 
 .favorite-button {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 40px;
-  height: 40px;
-  display: inline-flex;
+  top: 16px;
+  right: 16px;
+  width: 46px;
+  height: 46px;
+  display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 10;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.36);
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.92);
-  color: #4b5563;
+  background-color: rgba(17, 24, 39, 0.22);
+  color: #ffffff;
   cursor: pointer;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.24);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   transition:
+    border-color 0.2s ease,
     color 0.2s ease,
     transform 0.2s ease,
     background-color 0.2s ease;
 }
 
-.favorite-button:hover,
-.favorite-button-active {
-  color: #dc2626;
+.favorite-heart {
+  display: block;
+  width: 24px;
+  height: 24px;
+  fill: transparent !important;
+  stroke: white !important;
+  stroke-width: 2.2;
+  pointer-events: none;
+  opacity: 1 !important;
+  visibility: visible !important;
+  filter: drop-shadow(0 2px 4px rgba(15, 23, 42, 0.28));
+  transition: transform 0.24s ease;
+}
+
+.favorite-heart.active {
+  fill: #e53935 !important;
+  stroke: #e53935 !important;
 }
 
 .favorite-button:hover {
+  background-color: rgba(17, 24, 39, 0.34);
+  transform: translateY(-1px) scale(1.04);
+}
+
+.favorite-button:hover .favorite-heart {
+  transform: scale(1.08);
+}
+
+.favorite-button:active {
+  transform: scale(0.94);
+}
+
+.favorite-button-active {
+  border-color: rgba(255, 255, 255, 0.46);
+  background-color: rgba(17, 24, 39, 0.28);
+  color: #ef4444;
+  animation: favorite-pop 0.24s ease;
+}
+
+.favorite-button-active .favorite-heart {
   transform: scale(1.08);
 }
 
 .favorite-button:focus-visible {
   outline: 3px solid #93c5fd;
   outline-offset: 3px;
+}
+
+@keyframes favorite-pop {
+  0% {
+    transform: scale(0.92);
+  }
+
+  65% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 .property-card-content {
@@ -124,6 +176,39 @@
 }
 
 .property-details-link:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 3px;
+}
+
+.property-card-contact-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: -4px;
+}
+
+.property-card-contact-button {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #1f2937;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.property-card-contact-button:hover {
+  background-color: #f9fafb;
+}
+
+.property-card-contact-button:focus-visible {
   outline: 3px solid #93c5fd;
   outline-offset: 3px;
 }

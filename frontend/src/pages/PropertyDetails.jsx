@@ -1,14 +1,23 @@
-﻿import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link, useParams } from "react-router-dom";
 import { fetchPropertyById } from "../api/properties";
+import { reportProperty } from "../api/reports";
+import CallOwnerButton from "../components/CallOwnerButton";
+import WhatsAppButton from "../components/WhatsAppButton";
 import "./PropertyDetails.css";
 
 function PropertyDetails() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const [property, setProperty] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [reportReason, setReportReason] = useState("Fake Listing");
+  const [reportDetails, setReportDetails] = useState("");
+  const [reportStatus, setReportStatus] = useState("");
+  const [isReporting, setIsReporting] = useState(false);
 
   useEffect(() => {
     async function loadProperty() {
@@ -17,23 +26,21 @@ function PropertyDetails() {
         setProperty(loadedProperty);
         setSelectedImageIndex(0);
       } catch {
-        setErrorMessage(
-          "The property you are looking for does not exist or may no longer be available.",
-        );
+        setErrorMessage(t("details.notFoundText"));
       } finally {
         setIsLoading(false);
       }
     }
 
     loadProperty();
-  }, [id]);
+  }, [id, t]);
 
   if (isLoading) {
     return (
       <main className="property-details-page">
         <section className="property-not-found">
-          <h1>Loading Property</h1>
-          <p>Getting the latest listing details.</p>
+          <h1>{t("details.loadingTitle")}</h1>
+          <p>{t("details.loadingText")}</p>
         </section>
       </main>
     );
@@ -43,11 +50,30 @@ function PropertyDetails() {
     return (
       <main className="property-details-page">
         <section className="property-not-found">
-          <h1>Property Not Found</h1>
+          <h1>{t("details.notFoundTitle")}</h1>
           <p>{errorMessage}</p>
         </section>
       </main>
     );
+  }
+
+  async function handleReportSubmit(event) {
+    event.preventDefault();
+    setReportStatus("");
+    setIsReporting(true);
+
+    try {
+      await reportProperty(property.id, {
+        reason: reportReason,
+        details: reportDetails,
+      });
+      setReportDetails("");
+      setReportStatus(t("details.reportSuccess"));
+    } catch (error) {
+      setReportStatus(error.message || t("details.reportFailure"));
+    } finally {
+      setIsReporting(false);
+    }
   }
 
   return (
@@ -87,16 +113,16 @@ function PropertyDetails() {
 
             <dl className="property-details-features">
               <div>
-                <dt>Bedrooms</dt>
+                <dt>{t("details.bedrooms")}</dt>
                 <dd>{property.bedrooms}</dd>
               </div>
               <div>
-                <dt>Bathrooms</dt>
+                <dt>{t("details.bathrooms")}</dt>
                 <dd>{property.bathrooms}</dd>
               </div>
               <div>
-                <dt>Area</dt>
-                <dd>{property.area} m²</dd>
+                <dt>{t("details.area")}</dt>
+                <dd>{t("properties.area", { area: property.area })}</dd>
               </div>
             </dl>
 
@@ -104,12 +130,57 @@ function PropertyDetails() {
           </section>
 
           <aside className="property-contact-card">
-            <h2>Interested in this property?</h2>
-            <p>
-              Contact the Bayti team to schedule a viewing or request more
-              details about this listing.
-            </p>
-            <button className="property-contact-button">Contact Us</button>
+            <h2>{t("details.interested")}</h2>
+            <p>{t("details.contactText")}</p>
+            <Link className="property-contact-button" to="/contact">
+              {t("details.contact")}
+            </Link>
+            {property.phoneNumber && (
+              <>
+                <p className="property-owner-phone">
+                  <span>{t("details.ownerPhone")}</span>
+                  {property.phoneNumber}
+                </p>
+                <div className="property-owner-actions">
+                  <CallOwnerButton
+                    className="property-contact-button"
+                    phoneNumber={property.phoneNumber}
+                  />
+                  <WhatsAppButton
+                    className="property-contact-button"
+                    phoneNumber={property.phoneNumber}
+                  >
+                    {t("details.whatsapp")}
+                  </WhatsAppButton>
+                </div>
+              </>
+            )}
+          </aside>
+
+          <aside className="property-contact-card">
+            <h2>{t("details.reportTitle")}</h2>
+            <form className="property-report-form" onSubmit={handleReportSubmit}>
+              <select
+                value={reportReason}
+                onChange={(event) => setReportReason(event.target.value)}
+              >
+                <option value="Fake Listing">{t("details.reportReasons.fake")}</option>
+                <option value="Inappropriate Images">{t("details.reportReasons.images")}</option>
+                <option value="Spam">{t("details.reportReasons.spam")}</option>
+                <option value="Wrong Information">{t("details.reportReasons.wrong")}</option>
+                <option value="Other">{t("details.reportReasons.other")}</option>
+              </select>
+              <textarea
+                rows="4"
+                placeholder={t("details.reportDetails")}
+                value={reportDetails}
+                onChange={(event) => setReportDetails(event.target.value)}
+              />
+              {reportStatus ? <p className="property-report-status">{reportStatus}</p> : null}
+              <button className="property-contact-button" type="submit" disabled={isReporting}>
+                {isReporting ? t("details.reporting") : t("details.report")}
+              </button>
+            </form>
           </aside>
         </div>
       </div>
@@ -118,4 +189,3 @@ function PropertyDetails() {
 }
 
 export default PropertyDetails;
-

@@ -132,6 +132,18 @@
   line-height: 1.7;
 }
 
+.property-owner-phone {
+  display: grid;
+  gap: 4px;
+  padding-top: 8px;
+  word-break: break-word;
+}
+
+.property-owner-phone span {
+  color: #111827;
+  font-weight: 700;
+}
+
 .property-contact-button {
   width: 100%;
   min-height: 46px;
@@ -143,6 +155,36 @@
   cursor: pointer;
   font-size: 16px;
   font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.property-owner-actions {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.property-report-form {
+  display: grid;
+  gap: 12px;
+}
+
+.property-report-form select,
+.property-report-form textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.property-report-status {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
 }
 
 .property-contact-button:hover {

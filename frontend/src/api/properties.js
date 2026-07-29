@@ -32,6 +32,11 @@ export async function fetchProperties() {
   return (data.properties || []).map(normalizeProperty);
 }
 
+export async function fetchMyProperties(token) {
+  const data = await apiRequest("/properties/mine/list", { token });
+  return (data.properties || []).map(normalizeProperty);
+}
+
 export async function fetchPropertyById(id) {
   const data = await apiRequest(`/properties/${id}`);
   return normalizeProperty(data.property);

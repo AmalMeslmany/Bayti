@@ -1,26 +1,24 @@
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import "./Hero.css";
 import heroImage from "../assets/bayti-hero.jpg";
 
 function Hero() {
+  const { t } = useTranslation();
+
   return (
-    <section
-      className="hero"
-      style={{ backgroundImage: `url(${heroImage})` }}
-    >
+    <section className="hero" style={{ backgroundImage: `url(${heroImage})` }}>
       <div className="hero-content">
-        <h1>Find Your Perfect Home with Bayti</h1>
-        <p>
-          Discover modern properties, trusted listings, and beautiful homes
-          designed around the way you want to live.
-        </p>
+        <h1>{t("hero.title")}</h1>
+        <p>{t("hero.subtitle")}</p>
 
         <div className="hero-actions">
-          <button className="hero-button hero-button-primary">
-            Browse Properties
-          </button>
-          <button className="hero-button hero-button-secondary">
-            Contact Us
-          </button>
+          <Link className="hero-button hero-button-primary" to="/properties">
+            {t("hero.browse")}
+          </Link>
+          <Link className="hero-button hero-button-secondary" to="/contact">
+            {t("hero.contact")}
+          </Link>
         </div>
       </div>
     </section>

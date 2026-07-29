@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import PasswordInput from "../components/PasswordInput";
 import { useAuth } from "../context/useAuth";
@@ -7,6 +8,7 @@ import "./Auth.css";
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function Login() {
+  const { t } = useTranslation();
   const { login } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -32,13 +34,13 @@ function Login() {
     const nextErrors = {};
 
     if (!formData.email.trim()) {
-      nextErrors.email = "Email is required.";
+      nextErrors.email = t("validation.emailRequired");
     } else if (!emailPattern.test(formData.email)) {
-      nextErrors.email = "Please enter a valid email address.";
+      nextErrors.email = t("validation.invalidEmail");
     }
 
     if (!formData.password) {
-      nextErrors.password = "Password is required.";
+      nextErrors.password = t("validation.passwordRequired");
     }
 
     return nextErrors;
@@ -74,13 +76,13 @@ function Login() {
     <main className="auth-page">
       <section className="auth-card" aria-labelledby="login-heading">
         <header className="auth-header">
-          <h1 id="login-heading">Login</h1>
-          <p>Welcome back. Sign in to continue exploring Bayti.</p>
+          <h1 id="login-heading">{t("auth.loginTitle")}</h1>
+          <p>{t("auth.loginSubtitle")}</p>
         </header>
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           <div className="auth-field">
-            <label htmlFor="login-email">Email</label>
+            <label htmlFor="login-email">{t("auth.email")}</label>
             <input
               id="login-email"
               type="email"
@@ -92,7 +94,7 @@ function Login() {
           </div>
 
           <div className="auth-field">
-            <label htmlFor="login-password">Password</label>
+            <label htmlFor="login-password">{t("auth.password")}</label>
             <PasswordInput
               id="login-password"
               name="password"
@@ -102,6 +104,8 @@ function Login() {
               onToggleVisibility={() =>
                 setIsPasswordVisible(!isPasswordVisible)
               }
+              hideLabel={t("auth.hidePassword")}
+              showLabel={t("auth.showPassword")}
             />
             {errors.password && (
               <p className="auth-error">{errors.password}</p>
@@ -109,14 +113,14 @@ function Login() {
           </div>
 
           <button className="auth-button" type="submit">
-            {isSubmitting ? "Logging in..." : "Login"}
+            {isSubmitting ? t("auth.loggingIn") : t("auth.login")}
           </button>
         </form>
 
         {backendError && <p className="auth-error">{backendError}</p>}
 
         <p className="auth-switch">
-          Do not have an account? <Link to="/register">Register</Link>
+          {t("auth.noAccount")} <Link to="/register">{t("auth.register")}</Link>
         </p>
       </section>
     </main>

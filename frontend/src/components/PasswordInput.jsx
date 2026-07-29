@@ -5,6 +5,8 @@ function PasswordInput({
   onChange,
   isVisible,
   onToggleVisibility,
+  hideLabel = "Hide password",
+  showLabel = "Show password",
 }) {
   return (
     <div className="password-input-wrapper">
@@ -19,7 +21,7 @@ function PasswordInput({
         className="password-toggle"
         type="button"
         onClick={onToggleVisibility}
-        aria-label={isVisible ? "Hide password" : "Show password"}
+        aria-label={isVisible ? hideLabel : showLabel}
       >
         <svg
           aria-hidden="true"

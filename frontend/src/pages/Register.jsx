@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../api/auth";
 import PasswordInput from "../components/PasswordInput";
@@ -7,6 +8,7 @@ import "./Auth.css";
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function Register() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullName: "",
@@ -35,23 +37,23 @@ function Register() {
     const nextErrors = {};
 
     if (!formData.fullName.trim()) {
-      nextErrors.fullName = "Full name is required.";
+      nextErrors.fullName = t("validation.fullNameRequired");
     }
 
     if (!formData.email.trim()) {
-      nextErrors.email = "Email is required.";
+      nextErrors.email = t("validation.emailRequired");
     } else if (!emailPattern.test(formData.email)) {
-      nextErrors.email = "Please enter a valid email address.";
+      nextErrors.email = t("validation.invalidEmail");
     }
 
     if (!formData.password) {
-      nextErrors.password = "Password is required.";
+      nextErrors.password = t("validation.passwordRequired");
     }
 
     if (!formData.confirmPassword) {
-      nextErrors.confirmPassword = "Please confirm your password.";
+      nextErrors.confirmPassword = t("validation.confirmPassword");
     } else if (formData.password !== formData.confirmPassword) {
-      nextErrors.confirmPassword = "Passwords do not match.";
+      nextErrors.confirmPassword = t("validation.passwordsMismatch");
     }
 
     return nextErrors;
@@ -98,13 +100,13 @@ function Register() {
     <main className="auth-page">
       <section className="auth-card" aria-labelledby="register-heading">
         <header className="auth-header">
-          <h1 id="register-heading">Register</h1>
-          <p>Create your Bayti account to save and manage properties.</p>
+          <h1 id="register-heading">{t("auth.registerTitle")}</h1>
+          <p>{t("auth.registerSubtitle")}</p>
         </header>
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           <div className="auth-field">
-            <label htmlFor="register-full-name">Full Name</label>
+            <label htmlFor="register-full-name">{t("auth.fullName")}</label>
             <input
               id="register-full-name"
               type="text"
@@ -118,7 +120,7 @@ function Register() {
           </div>
 
           <div className="auth-field">
-            <label htmlFor="register-email">Email</label>
+            <label htmlFor="register-email">{t("auth.email")}</label>
             <input
               id="register-email"
               type="email"
@@ -130,7 +132,7 @@ function Register() {
           </div>
 
           <div className="auth-field">
-            <label htmlFor="register-password">Password</label>
+            <label htmlFor="register-password">{t("auth.password")}</label>
             <PasswordInput
               id="register-password"
               name="password"
@@ -138,6 +140,8 @@ function Register() {
               onChange={handleChange}
               isVisible={visiblePasswords.password}
               onToggleVisibility={() => togglePasswordVisibility("password")}
+              hideLabel={t("auth.hidePassword")}
+              showLabel={t("auth.showPassword")}
             />
             {errors.password && (
               <p className="auth-error">{errors.password}</p>
@@ -145,7 +149,9 @@ function Register() {
           </div>
 
           <div className="auth-field">
-            <label htmlFor="register-confirm-password">Confirm Password</label>
+            <label htmlFor="register-confirm-password">
+              {t("auth.confirmPassword")}
+            </label>
             <PasswordInput
               id="register-confirm-password"
               name="confirmPassword"
@@ -155,6 +161,8 @@ function Register() {
               onToggleVisibility={() =>
                 togglePasswordVisibility("confirmPassword")
               }
+              hideLabel={t("auth.hidePassword")}
+              showLabel={t("auth.showPassword")}
             />
             {errors.confirmPassword && (
               <p className="auth-error">{errors.confirmPassword}</p>
@@ -162,14 +170,14 @@ function Register() {
           </div>
 
           <button className="auth-button" type="submit">
-            {isSubmitting ? "Creating account..." : "Register"}
+            {isSubmitting ? t("auth.creatingAccount") : t("auth.register")}
           </button>
         </form>
 
         {backendError && <p className="auth-error">{backendError}</p>}
 
         <p className="auth-switch">
-          Already have an account? <Link to="/login">Login</Link>
+          {t("auth.haveAccount")} <Link to="/login">{t("auth.login")}</Link>
         </p>
       </section>
     </main>

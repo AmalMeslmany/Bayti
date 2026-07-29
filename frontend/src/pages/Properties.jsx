@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { fetchProperties } from "../api/properties";
 import PropertyCard from "../components/PropertyCard";
 import "./Properties.css";
 
 function Properties({ favoriteIds, onToggleFavorite }) {
+  const { t } = useTranslation();
   const [properties, setProperties] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -18,14 +20,14 @@ function Properties({ favoriteIds, onToggleFavorite }) {
         const loadedProperties = await fetchProperties();
         setProperties(loadedProperties);
       } catch {
-        setErrorMessage("Unable to load properties. Please try again later.");
+        setErrorMessage(t("properties.loadError"));
       } finally {
         setIsLoading(false);
       }
     }
 
     loadProperties();
-  }, []);
+  }, [t]);
 
   const filteredProperties = properties.filter((property) => {
     const searchValue = searchTerm.toLowerCase().trim();
@@ -52,57 +54,54 @@ function Properties({ favoriteIds, onToggleFavorite }) {
   return (
     <main className="properties-page">
       <header className="properties-header">
-        <h1 id="properties-heading">Featured Properties</h1>
-        <p>
-          Explore a curated selection of homes designed for comfort, location,
-          and long-term value.
-        </p>
+        <h1 id="properties-heading">{t("properties.title")}</h1>
+        <p>{t("properties.subtitle")}</p>
       </header>
 
-      <section className="properties-filters" aria-label="Property filters">
+      <section className="properties-filters" aria-label={t("properties.filters")}>
         <div className="filter-field filter-field-wide">
-          <label htmlFor="property-search">Search</label>
+          <label htmlFor="property-search">{t("properties.search")}</label>
           <input
             id="property-search"
             type="search"
-            placeholder="Search by title or location"
+            placeholder={t("properties.searchPlaceholder")}
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
           />
         </div>
 
         <div className="filter-field">
-          <label htmlFor="min-price">Minimum Price</label>
+          <label htmlFor="min-price">{t("properties.minPrice")}</label>
           <input
             id="min-price"
             type="number"
             min="0"
-            placeholder="Min"
+            placeholder={t("properties.min")}
             value={minPrice}
             onChange={(event) => setMinPrice(event.target.value)}
           />
         </div>
 
         <div className="filter-field">
-          <label htmlFor="max-price">Maximum Price</label>
+          <label htmlFor="max-price">{t("properties.maxPrice")}</label>
           <input
             id="max-price"
             type="number"
             min="0"
-            placeholder="Max"
+            placeholder={t("properties.max")}
             value={maxPrice}
             onChange={(event) => setMaxPrice(event.target.value)}
           />
         </div>
 
         <div className="filter-field">
-          <label htmlFor="bedrooms">Bedrooms</label>
+          <label htmlFor="bedrooms">{t("properties.bedrooms")}</label>
           <select
             id="bedrooms"
             value={bedrooms}
             onChange={(event) => setBedrooms(event.target.value)}
           >
-            <option value="">Any</option>
+            <option value="">{t("properties.any")}</option>
             <option value="1">1+</option>
             <option value="2">2+</option>
             <option value="3">3+</option>
@@ -112,7 +111,7 @@ function Properties({ favoriteIds, onToggleFavorite }) {
         </div>
       </section>
 
-      {isLoading && <p className="properties-empty">Loading properties...</p>}
+      {isLoading && <p className="properties-empty">{t("properties.loading")}</p>}
 
       {errorMessage && <p className="properties-empty">{errorMessage}</p>}
 
@@ -130,14 +129,14 @@ function Properties({ favoriteIds, onToggleFavorite }) {
       )}
 
       {!isLoading && !errorMessage && properties.length === 0 && (
-        <p className="properties-empty">No properties available.</p>
+        <p className="properties-empty">{t("properties.empty")}</p>
       )}
 
       {!isLoading &&
         !errorMessage &&
         properties.length > 0 &&
         filteredProperties.length === 0 && (
-          <p className="properties-empty">No properties found.</p>
+          <p className="properties-empty">{t("properties.notFound")}</p>
       )}
     </main>
   );

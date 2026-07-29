@@ -1,0 +1,153 @@
+.contact-page {
+  min-height: calc(100vh - 66px);
+  padding: 56px 48px;
+  background-color: #f9fafb;
+}
+
+.contact-header,
+.contact-layout {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.contact-header {
+  margin-bottom: 30px;
+}
+
+.contact-header h1 {
+  color: #111827;
+  font-size: 40px;
+  line-height: 1.15;
+}
+
+.contact-header p {
+  max-width: 680px;
+  margin-top: 12px;
+  color: #6b7280;
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.contact-layout {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 28px;
+}
+
+.contact-info,
+.contact-form {
+  padding: 30px;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+}
+
+.contact-info h2 {
+  color: #111827;
+  font-size: 24px;
+}
+
+.contact-info p {
+  margin-top: 16px;
+  color: #6b7280;
+  line-height: 1.7;
+}
+
+.contact-info strong {
+  display: block;
+  color: #374151;
+  font-size: 14px;
+}
+
+.contact-info a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.contact-info a:hover {
+  color: #1d4ed8;
+}
+
+.contact-credit {
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+.contact-form {
+  display: grid;
+  gap: 18px;
+}
+
+.contact-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contact-field label {
+  color: #374151;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.contact-field input,
+.contact-field textarea {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  color: #111827;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.contact-field textarea {
+  padding: 12px;
+  resize: vertical;
+}
+
+.contact-error,
+.contact-status {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.contact-error,
+.contact-status-error {
+  color: #b91c1c;
+}
+
+.contact-status-success {
+  color: #047857;
+}
+
+.contact-button {
+  min-height: 48px;
+  border: 0;
+  border-radius: 6px;
+  background-color: #1f2937;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.contact-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+@media (max-width: 900px) {
+  .contact-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .contact-page {
+    padding: 40px 20px;
+  }
+}

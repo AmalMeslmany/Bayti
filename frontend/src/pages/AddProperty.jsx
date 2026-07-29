@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   createProperty,
@@ -19,10 +20,12 @@ const initialFormData = {
   bedrooms: "",
   bathrooms: "",
   area: "",
+  phoneNumber: "",
   description: "",
 };
 
 function AddProperty({ mode = "create" }) {
+  const { t } = useTranslation();
   const isEditMode = mode === "edit";
   const { id } = useParams();
   const { token, user } = useAuth();
@@ -52,11 +55,10 @@ function AddProperty({ mode = "create" }) {
       try {
         const property = await fetchPropertyById(id);
         const ownerId = property.owner?._id || property.owner?.id;
-        const isOwner =
-          ownerId === user.id || property.owner?.email === user.email;
+        const isOwner = ownerId === user.id;
 
         if (!isOwner) {
-          setBackendError("You are not authorized to edit this property.");
+          setBackendError(t("validation.unauthorizedEdit"));
           return;
         }
 
@@ -68,6 +70,7 @@ function AddProperty({ mode = "create" }) {
             bedrooms: String(property.bedrooms ?? ""),
             bathrooms: String(property.bathrooms ?? ""),
             area: String(property.area ?? ""),
+            phoneNumber: property.phoneNumber || "",
             description: property.description || "",
           });
           setExistingImages(property.images || []);
@@ -88,7 +91,7 @@ function AddProperty({ mode = "create" }) {
     return () => {
       isActive = false;
     };
-  }, [id, isEditMode, user.email, user.id]);
+  }, [id, isEditMode, t, user.id]);
 
   useEffect(() => {
     selectedImagesRef.current = selectedImages;
@@ -121,7 +124,7 @@ function AddProperty({ mode = "create" }) {
     const nextErrors = {};
 
     if (totalImageCount + files.length > maxImageCount) {
-      nextErrors.propertyImage = "A property can have a maximum of 5 images.";
+      nextErrors.propertyImage = t("validation.maxImages");
     }
 
     const invalidTypeFile = files.find(
@@ -129,13 +132,13 @@ function AddProperty({ mode = "create" }) {
     );
 
     if (invalidTypeFile) {
-      nextErrors.propertyImage = "Only JPEG, PNG, and WebP images are allowed.";
+      nextErrors.propertyImage = t("validation.imageTypes");
     }
 
     const oversizedFile = files.find((file) => file.size > maxImageSize);
 
     if (oversizedFile) {
-      nextErrors.propertyImage = "Each image must be 10 MB or less.";
+      nextErrors.propertyImage = t("validation.imageSize");
     }
 
     if (Object.keys(nextErrors).length > 0) {
@@ -186,16 +189,26 @@ function AddProperty({ mode = "create" }) {
 
     Object.entries(formData).forEach(([fieldName, value]) => {
       if (!value.trim()) {
-        nextErrors[fieldName] = "This field is required.";
+        nextErrors[fieldName] = t("validation.required");
       }
     });
 
     if (totalImageCount === 0) {
-      nextErrors.propertyImage = "At least one property image is required.";
+      nextErrors.propertyImage = t("validation.imageRequired");
     }
 
     if (totalImageCount > maxImageCount) {
-      nextErrors.propertyImage = "A property can have a maximum of 5 images.";
+      nextErrors.propertyImage = t("validation.maxImages");
+    }
+
+    const normalizedPhoneNumber = formData.phoneNumber.replace(/[\s\-()]/g, "");
+
+    if (!normalizedPhoneNumber) {
+      nextErrors.phoneNumber = t("validation.phoneRequired");
+    } else if (!normalizedPhoneNumber.startsWith("+")) {
+      nextErrors.phoneNumber = t("validation.phoneCountryCode");
+    } else if (!/^\+[1-9]\d{7,14}$/.test(normalizedPhoneNumber)) {
+      nextErrors.phoneNumber = t("validation.invalidPhone");
     }
 
     return nextErrors;
@@ -225,6 +238,7 @@ function AddProperty({ mode = "create" }) {
       propertyFormData.append("bedrooms", Number(formData.bedrooms));
       propertyFormData.append("bathrooms", Number(formData.bathrooms));
       propertyFormData.append("area", Number(formData.area));
+      propertyFormData.append("phoneNumber", formData.phoneNumber.trim());
 
       selectedImages.forEach((image) => {
         propertyFormData.append("images", image.file);
@@ -242,8 +256,8 @@ function AddProperty({ mode = "create" }) {
 
       setSuccessMessage(
         isEditMode
-          ? "Property updated successfully."
-          : "Property created successfully.",
+          ? t("addProperty.updateSuccess")
+          : t("addProperty.createSuccess"),
       );
       setTimeout(() => {
         navigate("/dashboard");
@@ -258,25 +272,26 @@ function AddProperty({ mode = "create" }) {
   return (
     <main className="add-property-page">
       {isLoadingProperty && (
-        <p className="add-property-status">Loading property...</p>
+        <p className="add-property-status">{t("addProperty.loading")}</p>
       )}
       <section className="add-property-card" aria-labelledby="add-property-title">
         <header className="add-property-header">
           <p className="add-property-eyebrow">
-            {isEditMode ? "Edit Listing" : "New Listing"}
+            {isEditMode
+              ? t("addProperty.editListing")
+              : t("addProperty.newListing")}
           </p>
           <h1 id="add-property-title">
-            {isEditMode ? "Edit Property" : "Add Property"}
+            {isEditMode ? t("addProperty.editTitle") : t("addProperty.addTitle")}
           </h1>
           <p>
-            Create a clean property draft with the key details buyers need to
-            understand the listing.
+            {t("addProperty.subtitle")}
           </p>
         </header>
 
         <form className="add-property-form" onSubmit={handleSubmit} noValidate>
           <div className="add-property-field add-property-field-wide">
-            <label htmlFor="property-title">Property Title</label>
+            <label htmlFor="property-title">{t("addProperty.propertyTitle")}</label>
             <input
               id="property-title"
               type="text"
@@ -288,7 +303,7 @@ function AddProperty({ mode = "create" }) {
           </div>
 
           <div className="add-property-field add-property-field-wide">
-            <label htmlFor="property-location">Location</label>
+            <label htmlFor="property-location">{t("addProperty.location")}</label>
             <input
               id="property-location"
               type="text"
@@ -302,7 +317,7 @@ function AddProperty({ mode = "create" }) {
           </div>
 
           <div className="add-property-field">
-            <label htmlFor="property-price">Price</label>
+            <label htmlFor="property-price">{t("addProperty.price")}</label>
             <input
               id="property-price"
               type="number"
@@ -315,7 +330,7 @@ function AddProperty({ mode = "create" }) {
           </div>
 
           <div className="add-property-field">
-            <label htmlFor="property-bedrooms">Bedrooms</label>
+            <label htmlFor="property-bedrooms">{t("addProperty.bedrooms")}</label>
             <input
               id="property-bedrooms"
               type="number"
@@ -330,7 +345,7 @@ function AddProperty({ mode = "create" }) {
           </div>
 
           <div className="add-property-field">
-            <label htmlFor="property-bathrooms">Bathrooms</label>
+            <label htmlFor="property-bathrooms">{t("addProperty.bathrooms")}</label>
             <input
               id="property-bathrooms"
               type="number"
@@ -345,7 +360,7 @@ function AddProperty({ mode = "create" }) {
           </div>
 
           <div className="add-property-field">
-            <label htmlFor="property-area">Area (m²)</label>
+            <label htmlFor="property-area">{t("addProperty.area")}</label>
             <input
               id="property-area"
               type="number"
@@ -358,7 +373,7 @@ function AddProperty({ mode = "create" }) {
           </div>
 
           <div className="add-property-field add-property-field-wide">
-            <label htmlFor="property-description">Description</label>
+            <label htmlFor="property-description">{t("addProperty.description")}</label>
             <textarea
               id="property-description"
               name="description"
@@ -372,19 +387,36 @@ function AddProperty({ mode = "create" }) {
           </div>
 
           <div className="add-property-field add-property-field-wide">
-            <label htmlFor="property-image">Property Images</label>
-            <p className="selected-file-name">{totalImageCount} / 5 images</p>
+            <label htmlFor="property-phone">{t("addProperty.phoneNumber")}</label>
+            <input
+              id="property-phone"
+              type="tel"
+              name="phoneNumber"
+              placeholder={t("addProperty.phonePlaceholder")}
+              value={formData.phoneNumber}
+              onChange={handleChange}
+            />
+            {errors.phoneNumber && (
+              <p className="add-property-error">{errors.phoneNumber}</p>
+            )}
+          </div>
+
+          <div className="add-property-field add-property-field-wide">
+            <label htmlFor="property-image">{t("addProperty.images")}</label>
+            <p className="selected-file-name">
+              {t("addProperty.imageCounter", { count: totalImageCount })}
+            </p>
 
             {existingImages.length > 0 && (
               <div className="image-preview-grid">
                 {existingImages.map((image) => (
                   <div className="image-preview" key={image.path || image.url}>
-                    <img src={image.url} alt="Current property" />
+                    <img src={image.url} alt={t("addProperty.currentImage")} />
                     <button
                       type="button"
                       onClick={() => removeExistingImage(image)}
                     >
-                      Remove
+                      {t("addProperty.remove")}
                     </button>
                   </div>
                 ))}
@@ -404,12 +436,15 @@ function AddProperty({ mode = "create" }) {
               <div className="image-preview-grid">
                 {selectedImages.map((image, index) => (
                   <div className="image-preview" key={image.previewUrl}>
-                    <img src={image.previewUrl} alt="Selected property preview" />
+                    <img
+                      src={image.previewUrl}
+                      alt={t("addProperty.selectedImage")}
+                    />
                     <button
                       type="button"
                       onClick={() => removeSelectedImage(index)}
                     >
-                      Remove
+                      {t("addProperty.remove")}
                     </button>
                   </div>
                 ))}
@@ -424,11 +459,11 @@ function AddProperty({ mode = "create" }) {
           <button className="add-property-button" type="submit">
             {isSubmitting
               ? isEditMode
-                ? "Saving..."
-                : "Publishing..."
+                ? t("addProperty.saving")
+                : t("addProperty.publishing")
               : isEditMode
-                ? "Save Changes"
-                : "Publish Property"}
+                ? t("addProperty.save")
+                : t("addProperty.publish")}
           </button>
         </form>
 
@@ -442,3 +477,4 @@ function AddProperty({ mode = "create" }) {
 }
 
 export default AddProperty;
+

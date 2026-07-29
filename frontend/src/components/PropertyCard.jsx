@@ -1,4 +1,7 @@
-﻿import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
+import CallOwnerButton from "./CallOwnerButton";
+import WhatsAppButton from "./WhatsAppButton";
 import "./PropertyCard.css";
 
 function PropertyCard({
@@ -10,10 +13,18 @@ function PropertyCard({
   bedrooms,
   bathrooms,
   area,
+  phoneNumber,
   isFavorite = false,
   onToggleFavorite,
   actions,
 }) {
+  const { t } = useTranslation();
+  function handleFavoriteClick(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    onToggleFavorite(id);
+  }
+
   return (
     <article className="property-card">
       <div className="property-card-media">
@@ -30,27 +41,23 @@ function PropertyCard({
               isFavorite ? "favorite-button-active" : ""
             }`}
             type="button"
-            onClick={() => onToggleFavorite(id)}
+            onClick={handleFavoriteClick}
             aria-label={
               isFavorite
-                ? `Remove ${title} from favorites`
-                : `Add ${title} to favorites`
+                ? t("properties.removeFavorite", { title })
+                : t("properties.addFavorite", { title })
             }
             aria-pressed={isFavorite}
           >
             <svg
-              aria-hidden="true"
-              width="20"
-              height="20"
               viewBox="0 0 24 24"
-              fill={isFavorite ? "currentColor" : "none"}
+              width="24"
+              height="24"
+              aria-hidden="true"
+              className={isFavorite ? "favorite-heart active" : "favorite-heart"}
             >
               <path
-                d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                d="M12 21s-7-4.35-9.5-8.5C.5 9.5 2 5.5 5.5 4.5 8 3.8 10 5.3 12 7.5c2-2.2 4-3.7 6.5-3 3.5 1 5 5 3 8C19 16.65 12 21 12 21z"
               />
             </svg>
           </button>
@@ -65,28 +72,45 @@ function PropertyCard({
 
         <p className="property-price">{price}</p>
 
-        <dl className="property-features" aria-label="Property features">
+        <dl className="property-features" aria-label={t("properties.filters")}>
           <div>
-            <dt>Bedrooms</dt>
-            <dd>{bedrooms} Beds</dd>
+            <dt>{t("details.bedrooms")}</dt>
+            <dd>{t("properties.beds", { count: bedrooms })}</dd>
           </div>
           <div>
-            <dt>Bathrooms</dt>
-            <dd>{bathrooms} Baths</dd>
+            <dt>{t("details.bathrooms")}</dt>
+            <dd>{t("properties.baths", { count: bathrooms })}</dd>
           </div>
           <div>
-            <dt>Area</dt>
-            <dd>{area} m²</dd>
+            <dt>{t("details.area")}</dt>
+            <dd>{t("properties.area", { area })}</dd>
           </div>
         </dl>
 
         <Link
           className="property-details-link"
           to={`/properties/${id}`}
-          aria-label={`View details for ${title}`}
+          aria-label={t("properties.viewDetails")}
         >
-          View Details
+          {t("properties.viewDetails")}
         </Link>
+
+        {phoneNumber && (
+          <div className="property-card-contact-actions">
+            <CallOwnerButton
+              className="property-card-contact-button"
+              compact
+              phoneNumber={phoneNumber}
+            />
+            <WhatsAppButton
+              className="property-card-contact-button"
+              phoneNumber={phoneNumber}
+            >
+              <span aria-hidden="true">💬</span>
+              {t("properties.whatsapp")}
+            </WhatsAppButton>
+          </div>
+        )}
 
         {actions && <div className="property-card-actions">{actions}</div>}
       </div>
@@ -95,4 +119,3 @@ function PropertyCard({
 }
 
 export default PropertyCard;
-

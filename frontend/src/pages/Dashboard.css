@@ -108,6 +108,17 @@
   gap: 12px;
 }
 
+.dashboard-hidden-badge {
+  grid-column: 1 / -1;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background-color: #fef3c7;
+  color: #92400e;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+}
+
 .dashboard-card-actions a,
 .dashboard-card-actions button {
   min-height: 42px;

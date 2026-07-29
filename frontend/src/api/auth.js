@@ -19,3 +19,11 @@ export function fetchAuthenticatedUser(token) {
     token,
   });
 }
+
+export function updateProfile(profileData, token) {
+  return apiRequest("/users/profile", {
+    method: "PUT",
+    token,
+    body: profileData,
+  });
+}
