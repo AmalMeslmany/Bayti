@@ -12,16 +12,17 @@ async function getFavorites(req, res) {
       .select("-password")
       .populate({
         path: "favorites",
+        match: { isHidden: { $ne: true } },
         populate: {
           path: "owner",
-          select: "firstName lastName email",
+          select: "firstName lastName",
         },
       });
 
     return res.status(200).json({
       status: "success",
-      count: user.favorites.length,
-      favorites: user.favorites,
+      count: user.favorites.filter(Boolean).length,
+      favorites: user.favorites.filter(Boolean),
     });
   } catch (error) {
     console.error(`Get favorites error: ${error.message}`);
@@ -46,7 +47,7 @@ async function addFavorite(req, res) {
 
     const property = await Property.findById(propertyId);
 
-    if (!property) {
+    if (!property || property.isHidden) {
       return res.status(404).json({
         status: "error",
         message: "Property not found.",
@@ -64,7 +65,7 @@ async function addFavorite(req, res) {
         path: "favorites",
         populate: {
           path: "owner",
-          select: "firstName lastName email",
+          select: "firstName lastName",
         },
       });
 

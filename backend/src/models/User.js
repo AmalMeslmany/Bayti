@@ -35,6 +35,10 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    isDisabled: {
+      type: Boolean,
+      default: false,
+    },
     favorites: [
       {
         type: mongoose.Schema.Types.ObjectId,

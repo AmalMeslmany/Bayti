@@ -37,6 +37,11 @@ const propertySchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
+    phoneNumber: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     image: {
       type: String,
       trim: true,
@@ -72,6 +77,17 @@ const propertySchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+    isHidden: {
+      type: Boolean,
+      default: false,
+    },
+    hiddenBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    hiddenAt: {
+      type: Date,
     },
   },
   {

@@ -67,10 +67,26 @@ function FeatureIcon({ type }) {
   return icons[type] || null;
 }
 
+function isExternalUrl(value) {
+  try {
+    const url = new URL(value);
+
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
 function Home() {
   const { t } = useTranslation();
   const [featuredProperties, setFeaturedProperties] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const socialLinks = [
+    { label: "Facebook", url: import.meta.env.VITE_SOCIAL_FACEBOOK_URL },
+    { label: "Instagram", url: import.meta.env.VITE_SOCIAL_INSTAGRAM_URL },
+    { label: "LinkedIn", url: import.meta.env.VITE_SOCIAL_LINKEDIN_URL },
+    { label: "X", url: import.meta.env.VITE_SOCIAL_X_URL },
+  ].filter((socialLink) => isExternalUrl(socialLink.url));
 
   useEffect(() => {
     let isActive = true;
@@ -194,15 +210,23 @@ function Home() {
             </p>
             <p>{t("footer.officeLocation")}</p>
           </section>
-          <section>
-            <h3>{t("footer.social")}</h3>
-            <div className="footer-social">
-              <span>Facebook</span>
-              <span>Instagram</span>
-              <span>LinkedIn</span>
-              <span>X</span>
-            </div>
-          </section>
+          {socialLinks.length > 0 ? (
+            <section>
+              <h3>{t("footer.social")}</h3>
+              <div className="footer-social">
+                {socialLinks.map((socialLink) => (
+                  <a
+                    href={socialLink.url}
+                    key={socialLink.label}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    {socialLink.label}
+                  </a>
+                ))}
+              </div>
+            </section>
+          ) : null}
         </div>
         <p className="footer-credit">{t("footer.developerCredit")}</p>
         <p className="footer-copy">{t("footer.copy")}</p>

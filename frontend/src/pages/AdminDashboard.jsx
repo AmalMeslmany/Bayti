@@ -186,7 +186,7 @@ function AdminDashboard() {
           <div className="admin-panel">
             <div className="admin-filters">
               <input placeholder={t("admin.searchProperties")} value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} />
-              <input placeholder={t("admin.ownerId")} value={filters.owner} onChange={(event) => setFilters({ ...filters, owner: event.target.value })} />
+              <input placeholder={t("admin.ownerNameOrEmail")} value={filters.owner} onChange={(event) => setFilters({ ...filters, owner: event.target.value })} />
               <input placeholder={t("admin.city")} value={filters.city} onChange={(event) => setFilters({ ...filters, city: event.target.value })} />
               <select value={filters.status} onChange={(event) => setFilters({ ...filters, status: event.target.value })}>
                 <option value="">{t("admin.allStatuses")}</option>
@@ -200,7 +200,10 @@ function AdminDashboard() {
                 <article className="admin-row" key={property.id}>
                   <div>
                     <strong>{property.title}</strong>
-                    <span>{property.location} - {property.owner?.firstName} {property.owner?.lastName}</span>
+                    <span>
+                      {property.location} - {property.owner?.firstName} {property.owner?.lastName}
+                      {property.owner?.email ? ` - ${property.owner.email}` : ""}
+                    </span>
                     <span>{t("admin.created")}: {formatDate(property.createdAt)} | {t("admin.updated")}: {formatDate(property.updatedAt)}</span>
                   </div>
                   <div className="admin-actions">

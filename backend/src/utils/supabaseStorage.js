@@ -12,13 +12,13 @@ function sanitizeFilename(filename) {
   return safeBasename || "property-image";
 }
 
-async function optimizePropertyImage(file) {
+async function optimizeImage(file, size = 1600) {
   try {
     const optimizedBuffer = await sharp(file.buffer)
       .rotate()
       .resize({
-        width: 1600,
-        height: 1600,
+        width: size,
+        height: size,
         fit: "inside",
         withoutEnlargement: true,
       })
@@ -35,10 +35,53 @@ async function optimizePropertyImage(file) {
   }
 }
 
+function getStoragePathFromPublicUrl(publicUrl) {
+  if (!publicUrl) {
+    return "";
+  }
+
+  const marker = `/storage/v1/object/public/${bucketName}/`;
+  const markerIndex = publicUrl.indexOf(marker);
+
+  if (markerIndex === -1) {
+    return "";
+  }
+
+  return decodeURIComponent(publicUrl.slice(markerIndex + marker.length));
+}
+
 async function uploadPropertyImage(file, userId) {
   const supabase = getSupabaseClient();
-  const optimizedBuffer = await optimizePropertyImage(file);
+  const optimizedBuffer = await optimizeImage(file);
   const storagePath = `properties/${userId}/${Date.now()}-${crypto.randomUUID()}-${sanitizeFilename(
+    file.originalname,
+  )}.webp`;
+
+  const { error } = await supabase.storage
+    .from(bucketName)
+    .upload(storagePath, optimizedBuffer, {
+      contentType: "image/webp",
+      upsert: false,
+    });
+
+  if (error) {
+    throw new Error(`Image upload failed: ${error.message}`);
+  }
+
+  const { data } = supabase.storage.from(bucketName).getPublicUrl(storagePath);
+
+  return {
+    url: data.publicUrl,
+    path: storagePath,
+    optimizedSize: optimizedBuffer.length,
+    originalSize: file.size,
+  };
+}
+
+async function uploadProfileImage(file, userId) {
+  const supabase = getSupabaseClient();
+  const optimizedBuffer = await optimizeImage(file, 800);
+  const storagePath = `profile-images/${userId}/${Date.now()}-${crypto.randomUUID()}-${sanitizeFilename(
     file.originalname,
   )}.webp`;
 
@@ -113,6 +156,8 @@ async function deletePropertyImages(imagePaths) {
 module.exports = {
   deletePropertyImage,
   deletePropertyImages,
+  getStoragePathFromPublicUrl,
+  uploadProfileImage,
   uploadPropertyImage,
   uploadPropertyImages,
 };

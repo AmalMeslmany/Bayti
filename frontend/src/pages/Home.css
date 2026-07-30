@@ -167,8 +167,7 @@
   color: #ffffff;
 }
 
-.footer a,
-.footer-social span {
+.footer a {
   display: block;
   margin-top: 10px;
   color: #d1d5db;

@@ -2,6 +2,21 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
+function serializeUser(user) {
+  return {
+    id: user._id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    phone: user.phone,
+    profileImage: user.profileImage,
+    role: user.role,
+    isDisabled: user.isDisabled,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  };
+}
+
 function generateToken(userId) {
   if (!process.env.JWT_SECRET) {
     throw new Error("JWT_SECRET is missing. Add it to backend/.env.");
@@ -45,16 +60,7 @@ async function registerUser(req, res) {
     return res.status(201).json({
       status: "success",
       message: "User registered successfully.",
-      user: {
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      },
+      user: serializeUser(user),
     });
   } catch (error) {
     console.error(`Register error: ${error.message}`);
@@ -86,6 +92,13 @@ async function loginUser(req, res) {
       });
     }
 
+    if (user.isDisabled) {
+      return res.status(403).json({
+        status: "error",
+        message: "This account has been disabled.",
+      });
+    }
+
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
     if (!isPasswordCorrect) {
@@ -101,16 +114,7 @@ async function loginUser(req, res) {
       status: "success",
       message: "User logged in successfully.",
       token,
-      user: {
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      },
+      user: serializeUser(user),
     });
   } catch (error) {
     console.error(`Login error: ${error.message}`);
@@ -125,16 +129,7 @@ async function loginUser(req, res) {
 function getAuthenticatedUser(req, res) {
   return res.status(200).json({
     status: "success",
-    user: {
-      id: req.user._id,
-      firstName: req.user.firstName,
-      lastName: req.user.lastName,
-      email: req.user.email,
-      phone: req.user.phone,
-      role: req.user.role,
-      createdAt: req.user.createdAt,
-      updatedAt: req.user.updatedAt,
-    },
+    user: serializeUser(req.user),
   });
 }
 
@@ -142,4 +137,5 @@ module.exports = {
   getAuthenticatedUser,
   loginUser,
   registerUser,
+  serializeUser,
 };

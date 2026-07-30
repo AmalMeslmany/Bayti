@@ -23,6 +23,13 @@ async function protect(req, res, next) {
       });
     }
 
+    if (user.isDisabled) {
+      return res.status(403).json({
+        status: "error",
+        message: "This account has been disabled.",
+      });
+    }
+
     req.user = user;
     return next();
   } catch (error) {
@@ -33,4 +40,16 @@ async function protect(req, res, next) {
   }
 }
 
+function requireAdmin(req, res, next) {
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({
+      status: "error",
+      message: "Forbidden. Administrator access is required.",
+    });
+  }
+
+  return next();
+}
+
 module.exports = protect;
+module.exports.requireAdmin = requireAdmin;

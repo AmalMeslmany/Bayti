@@ -5,6 +5,38 @@ const {
   uploadPropertyImages,
 } = require("../utils/supabaseStorage");
 
+const phonePattern = /^\+[1-9]\d{7,14}$/;
+
+function normalizePhoneNumber(phoneNumber) {
+  return String(phoneNumber || "").replace(/[\s\-()]/g, "");
+}
+
+function validatePhoneNumber(phoneNumber) {
+  const normalizedPhoneNumber = normalizePhoneNumber(phoneNumber);
+
+  if (!normalizedPhoneNumber) {
+    return {
+      message: "Phone number is required.",
+    };
+  }
+
+  if (!normalizedPhoneNumber.startsWith("+")) {
+    return {
+      message: "Phone number must include the country code, for example +96170123456.",
+    };
+  }
+
+  if (!phonePattern.test(normalizedPhoneNumber)) {
+    return {
+      message: "Phone number must use a valid international format, for example +96170123456.",
+    };
+  }
+
+  return {
+    normalizedPhoneNumber,
+  };
+}
+
 function getCompatibleImages(property) {
   if (property.images && property.images.length > 0) {
     return property.images;
@@ -57,9 +89,9 @@ function parseRemoveImagePaths(value) {
 
 async function getProperties(req, res) {
   try {
-    const properties = await Property.find()
+    const properties = await Property.find({ isHidden: { $ne: true } })
       .sort({ createdAt: -1 })
-      .populate("owner", "firstName lastName email");
+      .populate("owner", "firstName lastName");
 
     return res.status(200).json({
       status: "success",
@@ -72,6 +104,27 @@ async function getProperties(req, res) {
     return res.status(500).json({
       status: "error",
       message: "Server error while fetching properties.",
+    });
+  }
+}
+
+async function getMyProperties(req, res) {
+  try {
+    const properties = await Property.find({ owner: req.user._id })
+      .sort({ createdAt: -1 })
+      .populate("owner", "firstName lastName");
+
+    return res.status(200).json({
+      status: "success",
+      count: properties.length,
+      properties: properties.map(serializeProperty),
+    });
+  } catch (error) {
+    console.error(`Get my properties error: ${error.message}`);
+
+    return res.status(500).json({
+      status: "error",
+      message: "Server error while fetching your properties.",
     });
   }
 }
@@ -89,10 +142,14 @@ async function getPropertyById(req, res) {
 
     const property = await Property.findById(id).populate(
       "owner",
-      "firstName lastName email",
+      "firstName lastName",
     );
 
-    if (!property) {
+    const isOwner =
+      req.user && property.owner.toString() === req.user._id.toString();
+    const isAdmin = req.user?.role === "admin";
+
+    if (!property || (property.isHidden && !isOwner && !isAdmin)) {
       return res.status(404).json({
         status: "error",
         message: "Property not found.",
@@ -123,6 +180,7 @@ async function createProperty(req, res) {
       bedrooms,
       bathrooms,
       area,
+      phoneNumber,
     } = req.body;
 
     const requiredTextFields = [title, description, location];
@@ -139,6 +197,15 @@ async function createProperty(req, res) {
       return res.status(400).json({
         status: "error",
         message: "All required property fields must be provided.",
+      });
+    }
+
+    const phoneValidation = validatePhoneNumber(phoneNumber);
+
+    if (phoneValidation.message) {
+      return res.status(400).json({
+        status: "error",
+        message: phoneValidation.message,
       });
     }
 
@@ -161,6 +228,7 @@ async function createProperty(req, res) {
       bedrooms,
       bathrooms,
       area,
+      phoneNumber: phoneValidation.normalizedPhoneNumber,
       images: uploadedImages,
       image: uploadedImages[0].url,
       imagePath: uploadedImages[0].path,
@@ -204,7 +272,10 @@ async function updateProperty(req, res) {
       });
     }
 
-    if (property.owner.toString() !== req.user._id.toString()) {
+    if (
+      property.owner.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
       return res.status(403).json({
         status: "error",
         message: "You are not authorized to update this property.",
@@ -219,6 +290,7 @@ async function updateProperty(req, res) {
       "bedrooms",
       "bathrooms",
       "area",
+      "phoneNumber",
     ];
 
     allowedFields.forEach((field) => {
@@ -226,6 +298,19 @@ async function updateProperty(req, res) {
         property[field] = req.body[field];
       }
     });
+
+    if (req.body.phoneNumber !== undefined) {
+      const phoneValidation = validatePhoneNumber(req.body.phoneNumber);
+
+      if (phoneValidation.message) {
+        return res.status(400).json({
+          status: "error",
+          message: phoneValidation.message,
+        });
+      }
+
+      property.phoneNumber = phoneValidation.normalizedPhoneNumber;
+    }
 
     const removeImagePaths = parseRemoveImagePaths(req.body.removeImagePaths);
     const existingImages = getCompatibleImages(property);
@@ -306,7 +391,10 @@ async function deleteProperty(req, res) {
       });
     }
 
-    if (property.owner.toString() !== req.user._id.toString()) {
+    if (
+      property.owner.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
       return res.status(403).json({
         status: "error",
         message: "You are not authorized to delete this property.",
@@ -334,6 +422,8 @@ module.exports = {
   createProperty,
   deleteProperty,
   getPropertyById,
+  getMyProperties,
   getProperties,
+  serializeProperty,
   updateProperty,
 };

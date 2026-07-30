@@ -7,7 +7,11 @@ async function connectDatabase() {
     throw new Error("MONGODB_URI is missing. Add it to backend/.env.");
   }
 
-  await mongoose.connect(mongoUri);
+  mongoose.set("bufferCommands", false);
+
+  await mongoose.connect(mongoUri, {
+    serverSelectionTimeoutMS: 5000,
+  });
   console.log("MongoDB connected successfully.");
 }
 
